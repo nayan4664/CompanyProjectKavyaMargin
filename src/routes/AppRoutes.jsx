@@ -69,11 +69,12 @@ const AppRoutes = () => {
     <Router>
       <Routes>
         {/* Auth Routes */}
+        <Route path="/" element={<Navigate to="/register" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         {/* Dashboard and Main App Routes */}
-        <Route path="/" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+        <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         
         {/* Organization */}
         <Route path="/organization/company-setup" element={<DashboardLayout><CompanySetup /></DashboardLayout>} />

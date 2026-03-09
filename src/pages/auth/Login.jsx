@@ -1,66 +1,96 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, Mail, Lock, ArrowRight } from 'lucide-react';
+import { TrendingUp, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // Simulate login
-    navigate('/');
+    
+    // Simple validation against registered user in localStorage
+    const registeredUser = JSON.parse(localStorage.getItem('registeredUser'));
+    
+    if (registeredUser && formData.email === registeredUser.email && formData.password === registeredUser.password) {
+      navigate('/dashboard');
+    } else {
+      setError('Invalid credentials. Please register first or check your details.');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 lg:p-10">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 py-12">
+      <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/50 border border-slate-800 p-8 lg:p-12 animate-in fade-in zoom-in duration-500">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-50 rounded-2xl text-primary-600 mb-4">
-            <TrendingUp className="w-8 h-8" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-500/10 rounded-2xl text-blue-500 mb-6 border border-blue-500/20 shadow-lg shadow-blue-500/10">
+            <TrendingUp className="w-10 h-10" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Welcome back</h1>
-          <p className="text-slate-500 mt-2 font-medium">Enter your credentials to access KavyaMargin</p>
+          <h1 className="text-3xl font-black text-slate-100 tracking-tight">Kavya<span className="text-blue-500">Margin</span></h1>
+          <p className="text-slate-400 mt-3 font-medium">Enterprise Access Portal</p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-xs font-bold text-center">
+            {error}
+          </div>
+        )}
 
         <form className="space-y-6" onSubmit={handleLogin}>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Work Email</label>
             <div className="relative group">
-              <Mail className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-primary-500 transition-colors" />
+              <Mail className="w-5 h-5 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-blue-500 transition-colors" />
               <input 
                 type="email" 
-                placeholder="name@company.com"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="name@kavyainfoweb.com"
+                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-slate-100 placeholder:text-slate-600"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between ml-1">
-              <label className="text-sm font-bold text-slate-700">Password</label>
-              <Link to="#" className="text-xs font-bold text-primary-600 hover:text-primary-700">Forgot password?</Link>
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Password</label>
+              <Link to="#" className="text-[10px] font-black uppercase tracking-wider text-blue-500 hover:text-blue-400 transition-colors">Forgot Password?</Link>
             </div>
             <div className="relative group">
-              <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-primary-500 transition-colors" />
+              <Lock className="w-5 h-5 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-blue-500 transition-colors" />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
+                className="w-full pl-12 pr-12 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-slate-100 placeholder:text-slate-600"
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-500 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
-          <button className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-all flex items-center justify-center gap-2 group">
-            Sign In
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <button className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 transition-all flex items-center justify-center gap-3 group active:scale-[0.98]">
+            Sign In to System
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
 
-        <div className="mt-8 text-center">
+        <div className="mt-10 text-center border-t border-slate-800 pt-8">
           <p className="text-sm text-slate-500 font-medium">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary-600 font-bold hover:text-primary-700 underline underline-offset-4">
-              Create an account
+            New to KavyaMargin?{' '}
+            <Link to="/register" className="text-blue-500 font-black hover:text-blue-400 transition-colors underline underline-offset-4">
+              Create Enterprise Account
             </Link>
           </p>
         </div>

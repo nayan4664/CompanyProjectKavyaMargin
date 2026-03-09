@@ -24,7 +24,7 @@ function cn(...inputs) {
 }
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { 
     label: 'Organization', 
     icon: Building2,
@@ -137,17 +137,17 @@ const Sidebar = ({ isOpen, onClose }) => {
       )}
 
       <aside className={cn(
-        "fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-screen flex flex-col z-40 transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0",
+        "fixed inset-y-0 left-0 w-64 bg-slate-950 border-r border-slate-800 h-screen flex flex-col z-40 transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-primary-600 dark:text-primary-400 tracking-tight flex items-center gap-2">
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+          <h1 className="text-xl font-black text-blue-500 tracking-tight flex items-center gap-2">
             <TrendingUp className="w-6 h-6" />
             KavyaMargin
           </h1>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg lg:hidden transition-colors"
+            className="p-2 hover:bg-slate-800 rounded-lg lg:hidden transition-colors"
           >
             <X className="w-5 h-5 text-slate-500" />
           </button>
@@ -161,10 +161,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                   to={item.path}
                   onClick={() => window.innerWidth < 1024 && onClose()}
                   className={({ isActive }) => cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
                     isActive 
-                      ? "bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400" 
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                      : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
                   )}
                 >
                   <item.icon className="w-4 h-4" />
@@ -175,8 +175,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                   <button
                     onClick={() => toggleMenu(item.label)}
                     className={cn(
-                      "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors",
-                      openMenus.includes(item.label) && "bg-slate-50/50 dark:bg-slate-800/50"
+                      "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold text-slate-400 hover:bg-slate-900 hover:text-slate-100 transition-colors",
+                      openMenus.includes(item.label) && "bg-slate-900/50"
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -189,17 +189,17 @@ const Sidebar = ({ isOpen, onClose }) => {
                     )} />
                   </button>
                   {openMenus.includes(item.label) && (
-                    <div className="mt-1 ml-9 space-y-1 border-l border-slate-100 dark:border-slate-800 pl-2">
+                    <div className="mt-1 ml-9 space-y-1 border-l border-slate-800 pl-2">
                       {item.children?.map((child) => (
                         <NavLink
                           key={child.path}
                           to={child.path}
                           onClick={() => window.innerWidth < 1024 && onClose()}
                           className={({ isActive }) => cn(
-                            "block px-3 py-2 rounded-md text-xs font-medium transition-colors",
+                            "block px-3 py-2 rounded-md text-xs font-bold transition-colors",
                             isActive 
-                              ? "text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/10" 
-                              : "text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                              ? "text-blue-400 bg-blue-500/5" 
+                              : "text-slate-500 hover:text-slate-200 hover:bg-slate-900"
                           )}
                         >
                           {child.label}
@@ -213,15 +213,14 @@ const Sidebar = ({ isOpen, onClose }) => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-          <NavLink 
-            to="/settings" 
-            onClick={() => window.innerWidth < 1024 && onClose()}
+        <div className="p-4 border-t border-slate-800">
+          <NavLink
+            to="/settings"
             className={({ isActive }) => cn(
-              "flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
               isActive 
-                ? "bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400" 
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
             )}
           >
             <Settings className="w-4 h-4" />
