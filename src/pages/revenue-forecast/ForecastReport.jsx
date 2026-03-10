@@ -1,97 +1,312 @@
-import React from 'react';
-import { FileText, Download, Filter, Search, Calendar, ChevronRight, TrendingUp } from 'lucide-react';
-import { exportToCSV, exportToPDF } from '../../utils/exportUtils';
+import React, { useState } from "react";
+import {
+  FileText,
+  Download,
+  Search,
+  ChevronRight,
+  TrendingUp,
+} from "lucide-react";
+
+import { exportToCSV, exportToPDF } from "../../utils/exportUtils";
 
 const reportData = [
-  { id: 1, name: 'Q1 Performance Review', type: 'Financial', author: 'System AI', date: '2026-04-01', size: '1.2 MB' },
-  { id: 2, name: 'H2 Revenue Projections', type: 'Forecast', author: 'Admin User', date: '2026-03-15', size: '2.4 MB' },
-  { id: 3, name: 'Bench Cost Analysis - Mar', type: 'Efficiency', author: 'System AI', date: '2026-03-10', size: '0.8 MB' },
-  { id: 4, name: 'Annual Strategy Document', type: 'Strategy', author: 'Project Director', date: '2026-01-05', size: '4.5 MB' },
+  {
+    id: 1,
+    name: "Q1 Performance Review",
+    type: "Financial",
+    author: "System AI",
+    date: "2026-04-01",
+    size: "1.2 MB",
+  },
+  {
+    id: 2,
+    name: "H2 Revenue Projections",
+    type: "Forecast",
+    author: "Admin User",
+    date: "2026-03-15",
+    size: "2.4 MB",
+  },
+  {
+    id: 3,
+    name: "Bench Cost Analysis - Mar",
+    type: "Efficiency",
+    author: "System AI",
+    date: "2026-03-10",
+    size: "0.8 MB",
+  },
+  {
+    id: 4,
+    name: "Annual Strategy Document",
+    type: "Strategy",
+    author: "Project Director",
+    date: "2026-01-05",
+    size: "4.5 MB",
+  },
 ];
 
 const ForecastReport = () => {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [financialYear, setFinancialYear] = useState("All");
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  // Function to get Financial Year from date
+  const getFinancialYear = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+
+    if (month >= 4) {
+      return `FY ${year}-${year + 1}`;
+    } else {
+      return `FY ${year - 1}-${year}`;
+    }
+  };
+
+  // Filter Reports
+  const filteredReports = reportData.filter((report) => {
+    const searchMatch = report.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const categoryMatch =
+      category === "All" || report.type === category;
+
+    const fyMatch =
+      financialYear === "All" ||
+      getFinancialYear(report.date) === financialYear;
+
+    return searchMatch && categoryMatch && fyMatch;
+  });
+
+  // Download report
+  const downloadReport = (report) => {
+    exportToCSV([report], `${report.name}.csv`);
+  };
+
+  // Stats
+  const totalReports = reportData.length;
+
+  const financialReports = reportData.filter(
+    (r) => r.type === "Financial"
+  ).length;
+
+  const forecastReports = reportData.filter(
+    (r) => r.type === "Forecast"
+  ).length;
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500" id="forecast-report-content">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <FileText className="w-8 h-8 text-blue-500" />
-            Forecast Reports
-          </h1>
-          <p className="text-slate-400 mt-2 font-medium">Access and generate detailed financial and operational reports.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => exportToPDF('forecast-report-content', 'Forecast_Reports_Summary.pdf')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+    <div className="space-y-8" id="forecast-report-content">
+
+      {/* Header */}
+
+      <header className="flex justify-between items-center">
+
+        <h1 className="text-3xl font-bold text-white flex gap-2">
+          <FileText /> Forecast Reports
+        </h1>
+
+        <div className="flex gap-3">
+
+          <button
+            onClick={() =>
+              exportToCSV(filteredReports, "ForecastReports.csv")
+            }
+            className="flex gap-2 bg-green-600 px-4 py-2 rounded-lg text-white"
           >
-            <Download className="w-4 h-4" />
-            Generate Custom Report
+            <Download size={16} /> CSV
           </button>
+
+          <button
+            onClick={() =>
+              exportToPDF(
+                "forecast-report-content",
+                "ForecastReports.pdf"
+              )
+            }
+            className="flex gap-2 bg-blue-600 px-4 py-2 rounded-lg text-white"
+          >
+            <Download size={16} /> PDF
+          </button>
+
         </div>
+
       </header>
 
-      {/* Report Filters */}
-      <div className="bg-slate-900/50 backdrop-blur-xl p-4 rounded-2xl border border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input type="text" placeholder="Search reports..." className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200" />
+      {/* Stats Cards */}
+
+      <div className="grid grid-cols-3 gap-6">
+
+        <div className="bg-slate-900 p-6 rounded-xl border border-slate-700">
+          <p className="text-gray-400 text-sm">Total Reports</p>
+          <h3 className="text-2xl text-white">{totalReports}</h3>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all border border-slate-700">
-            <Calendar className="w-4 h-4" />
-            Date Range
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all border border-slate-700">
-            <Filter className="w-4 h-4" />
-            Category
-          </button>
+
+        <div className="bg-slate-900 p-6 rounded-xl border border-slate-700">
+          <p className="text-gray-400 text-sm">Financial Reports</p>
+          <h3 className="text-2xl text-white">{financialReports}</h3>
         </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl border border-slate-700">
+          <p className="text-gray-400 text-sm">Forecast Reports</p>
+          <h3 className="text-2xl text-white">{forecastReports}</h3>
+        </div>
+
       </div>
 
-      {/* Report Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {reportData.map((report) => (
-          <div key={report.id} className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm hover:border-blue-500/30 transition-all group cursor-pointer">
-            <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <FileText className="w-6 h-6" />
+      {/* Filters */}
+
+      <div className="flex gap-4">
+
+        {/* Search */}
+
+        <div className="relative">
+
+          <Search className="absolute left-2 top-2 text-gray-400" />
+
+          <input
+            type="text"
+            placeholder="Search reports"
+            className="pl-8 p-2 bg-slate-800 rounded text-white"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+        </div>
+
+        {/* Category */}
+
+        <select
+          className="bg-slate-800 p-2 rounded text-white"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option>All</option>
+          <option>Financial</option>
+          <option>Forecast</option>
+          <option>Efficiency</option>
+          <option>Strategy</option>
+        </select>
+
+        {/* Financial Year Selector */}
+
+        <select
+          className="bg-slate-800 p-2 rounded text-white"
+          value={financialYear}
+          onChange={(e) => setFinancialYear(e.target.value)}
+        >
+          <option value="All">All Financial Years</option>
+          <option value="FY 2025-2026">FY 2025-2026</option>
+          <option value="FY 2026-2027">FY 2026-2027</option>
+          <option value="FY 2027-2028">FY 2027-2028</option>
+        </select>
+
+      </div>
+
+      {/* Report Cards */}
+
+      <div className="grid grid-cols-4 gap-6">
+
+        {filteredReports.map((report) => (
+
+          <div
+            key={report.id}
+            className="bg-slate-900 p-6 rounded-xl border border-slate-700 hover:border-blue-500 transition"
+          >
+
+            <FileText className="text-blue-400 mb-4" />
+
+            <h4 className="text-white font-semibold">
+              {report.name}
+            </h4>
+
+            <p className="text-blue-400 text-xs">
+              {report.type}
+            </p>
+
+            <div className="text-xs text-gray-400 mt-4">
+
+              <p>Author: {report.author}</p>
+
+              <p>Date: {report.date}</p>
+
+              <p>FY: {getFinancialYear(report.date)}</p>
+
+              <p>Size: {report.size}</p>
+
             </div>
-            <h4 className="font-bold text-slate-100 line-clamp-1">{report.name}</h4>
-            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mt-1">{report.type}</p>
-            <div className="mt-6 pt-6 border-t border-slate-800 space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500 font-medium">Date</span>
-                <span className="text-slate-300 font-bold">{report.date}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500 font-medium">Size</span>
-                <span className="text-slate-300 font-bold">{report.size}</span>
-              </div>
-            </div>
-            <button className="w-full mt-6 py-2 bg-slate-800 group-hover:bg-blue-600 group-hover:text-white text-slate-300 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2">
-              <Download className="w-3.5 h-3.5" />
-              Download
+
+            <button
+              onClick={() => downloadReport(report)}
+              className="mt-4 w-full bg-blue-600 py-2 rounded flex justify-center gap-2 text-white hover:bg-blue-700"
+            >
+              <Download size={14} /> Download
             </button>
+
           </div>
+
         ))}
+
       </div>
 
-      {/* Featured Insight */}
-      <div className="bg-slate-900 p-8 rounded-3xl shadow-xl shadow-black/20 relative overflow-hidden border border-slate-800">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <TrendingUp className="w-32 h-32 text-blue-400" />
-        </div>
-        <div className="relative z-10">
-          <h3 className="text-white font-bold text-xl mb-2">Automated Monthly Close</h3>
-          <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
-            The March financial close report has been automatically generated by the AI engine. It includes a detailed reconciliation of actual billing vs forecast with a 98.4% match accuracy.
-          </p>
-          <button className="mt-6 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-sm hover:bg-blue-700 transition-all flex items-center gap-2">
-            View Analysis
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+      {/* AI Insight */}
+
+      <div className="bg-slate-900 p-8 rounded-xl border border-slate-800">
+
+        <h3 className="text-xl text-white mb-2 flex items-center gap-2">
+          <TrendingUp /> AI Financial Insight
+        </h3>
+
+        <p className="text-slate-400 text-sm">
+          The March financial close report has been automatically generated
+          by the AI engine. It includes reconciliation of actual billing
+          vs forecast with 98% accuracy.
+        </p>
+
+        <button
+          onClick={() => setShowAnalysis(true)}
+          className="mt-6 flex gap-2 bg-blue-600 px-4 py-2 rounded text-white hover:bg-blue-700"
+        >
+          View Analysis <ChevronRight size={16} />
+        </button>
+
       </div>
+
+      {/* Analysis Modal */}
+
+      {showAnalysis && (
+
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+
+          <div className="bg-slate-900 p-8 rounded-xl w-[500px] border border-slate-700">
+
+            <h2 className="text-xl text-white mb-4">
+              Financial Analysis Report
+            </h2>
+
+            <p className="text-slate-400 text-sm mb-4">
+              Revenue increased by 14% in March compared to February.
+            </p>
+
+            <ul className="text-sm text-slate-300 space-y-2">
+              <li>📈 Revenue Growth: +14%</li>
+              <li>💰 Profit Margin: 32%</li>
+              <li>📊 Forecast Accuracy: 98%</li>
+            </ul>
+
+            <button
+              onClick={() => setShowAnalysis(false)}
+              className="mt-6 bg-blue-600 px-4 py-2 rounded text-white"
+            >
+              Close
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
     </div>
   );
 };
