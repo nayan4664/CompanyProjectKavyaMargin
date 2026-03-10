@@ -7,10 +7,19 @@ const Navbar = ({ onMenuClick }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const userRef = useRef(null);
   const notificationRef = useRef(null);
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -33,11 +42,26 @@ const Navbar = ({ onMenuClick }) => {
     }
   };
 
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const notifications = [
     { id: 1, title: 'Margin Alert', message: 'Project Alpha margin dropped below 15%', time: '2m ago', read: false },
     { id: 2, title: 'New Contract', message: 'SLA analysis ready for review', time: '1h ago', read: false },
     { id: 3, title: 'System Update', message: 'KavyaMargin v4.2 now live', time: '5h ago', read: true },
   ];
+
+  const handleSignOut = () => {
+    localStorage.removeItem('currentUser');
+    navigate('/login');
+  };
 
   return (
     <header className="h-16 bg-slate-950 border-b border-slate-800 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors">
@@ -119,19 +143,19 @@ const Navbar = ({ onMenuClick }) => {
             className={`flex items-center gap-2 md:gap-3 pl-2 pr-1 py-1 hover:bg-slate-800 rounded-full transition-colors group ${showUserDropdown ? 'bg-slate-800' : ''}`}
           >
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-slate-100 leading-none">Admin User</p>
-              <p className="text-[10px] text-slate-500 mt-1 font-black uppercase tracking-widest">Director</p>
+              <p className="text-xs font-bold text-slate-100 leading-none">{currentUser?.fullName || 'Guest User'}</p>
+              <p className="text-[10px] text-slate-500 mt-1 font-black uppercase tracking-widest">{currentUser?.role || 'User'}</p>
             </div>
             <div className="w-8 h-8 md:w-9 md:h-9 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center font-black text-xs md:text-sm border-2 border-blue-500/20 group-hover:border-blue-500/50 transition-all">
-              AD
+              {getInitials(currentUser?.fullName)}
             </div>
           </button>
 
           {showUserDropdown && (
             <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-black/50 p-2 animate-in fade-in zoom-in-95 duration-200">
               <div className="p-3 mb-2 bg-slate-800/50 rounded-xl">
-                <p className="text-xs font-bold text-slate-100">Admin User</p>
-                <p className="text-[10px] text-slate-500 mt-0.5">admin@kavyamargin.com</p>
+                <p className="text-xs font-bold text-slate-100">{currentUser?.fullName || 'Guest User'}</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">{currentUser?.email || 'guest@kavyamargin.com'}</p>
               </div>
               <div className="space-y-1">
                 <Link to="/settings" onClick={() => setShowUserDropdown(false)} className="flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition-colors group font-bold">
@@ -144,7 +168,7 @@ const Navbar = ({ onMenuClick }) => {
                 </Link>
                 <div className="h-[1px] bg-slate-800 my-1 mx-2" />
                 <button 
-                  onClick={() => navigate('/login')}
+                  onClick={handleSignOut}
                   className="flex items-center gap-3 px-3 py-2 text-sm text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors w-full group font-bold"
                 >
                   <LogOut className="w-4 h-4 text-rose-400 group-hover:text-rose-500" />

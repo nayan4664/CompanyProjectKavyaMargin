@@ -18,6 +18,11 @@ const Login = () => {
     const registeredUser = JSON.parse(localStorage.getItem('registeredUser'));
     
     if (registeredUser && formData.email === registeredUser.email && formData.password === registeredUser.password) {
+      localStorage.setItem('currentUser', JSON.stringify({
+        fullName: registeredUser.fullName,
+        email: registeredUser.email,
+        role: registeredUser.role
+      }));
       navigate('/dashboard');
     } else {
       setError('Invalid credentials. Please register first or check your details.');
