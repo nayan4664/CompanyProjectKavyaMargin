@@ -22,7 +22,8 @@ const Register = () => {
     'Company Admin': 'sushil@kavyainfoweb.com',
     'Project Manager': 'rajni@kavyainfoweb.com',
     'HR': 'raj@kavyainfoweb.com',
-    'Team Lead': 'priti@kavyainfoweb.com'
+    'Team Lead': 'priti@kavyainfoweb.com',
+    'Viewers': 'viewer@kavyainfoweb.com'
   };
 
   const validatePassword = (pass) => {
@@ -92,6 +93,7 @@ const Register = () => {
 
     // If all valid, simulate registration success and navigate to login
     localStorage.setItem('registeredUser', JSON.stringify({
+      fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
       role: formData.userRole
@@ -165,6 +167,7 @@ const Register = () => {
                   <option value="Project Manager" className="bg-slate-950">Project Manager</option>
                   <option value="HR" className="bg-slate-950">HR</option>
                   <option value="Team Lead" className="bg-slate-950">Team Lead</option>
+                  <option value="Viewers" className="bg-slate-950">Viewers</option>
                 </select>
               </div>
               {errors.userRole && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.userRole}</p>}
