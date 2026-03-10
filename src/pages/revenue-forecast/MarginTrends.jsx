@@ -1,128 +1,244 @@
-import React from 'react';
-import { TrendingUp, Download, ArrowUpRight, ArrowDownRight, Info, PieChart as PieChartIcon } from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend,
+import React, { useState } from "react";
+import { TrendingUp, Download } from "lucide-react";
+import {
   AreaChart,
-  Area
-} from 'recharts';
-import { exportToPDF } from '../../utils/exportUtils';
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Line,
+  Legend,
+} from "recharts";
 
-const trendData = [
-  { month: 'Jan', gross: 32, net: 24, target: 30 },
-  { month: 'Feb', gross: 34, net: 26, target: 30 },
-  { month: 'Mar', gross: 31, net: 22, target: 30 },
-  { month: 'Apr', gross: 35, net: 28, target: 30 },
-  { month: 'May', gross: 38, net: 31, target: 30 },
-  { month: 'Jun', gross: 36, net: 29, target: 30 },
+import { exportToPDF } from "../../utils/exportUtils";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+const allData = [
+  { month: "Jan", gross: 32, net: 24, target: 30 },
+  { month: "Feb", gross: 34, net: 26, target: 30 },
+  { month: "Mar", gross: 31, net: 22, target: 30 },
+  { month: "Apr", gross: 35, net: 28, target: 30 },
+  { month: "May", gross: 38, net: 31, target: 30 },
+  { month: "Jun", gross: 36, net: 29, target: 30 },
+  { month: "Jul", gross: 40, net: 33, target: 32 },
+  { month: "Aug", gross: 37, net: 30, target: 32 },
+  { month: "Sep", gross: 39, net: 34, target: 33 },
+  { month: "Oct", gross: 42, net: 36, target: 34 },
+  { month: "Nov", gross: 41, net: 35, target: 34 },
+  { month: "Dec", gross: 44, net: 38, target: 35 },
 ];
 
 const MarginTrends = () => {
+
+  const [filter, setFilter] = useState("all");
+
+  const getFilteredData = () => {
+
+    if (filter === "1") return allData.slice(-1);
+
+    if (filter === "3") return allData.slice(-3);
+
+    if (filter === "6") return allData.slice(-6);
+
+    if (filter === "12") return allData;
+
+    if (filter === "all") return allData;
+
+    return allData;
+
+  };
+
+  const trendData = getFilteredData();
+
+  // KPI Calculations
+  const avgGross =
+    trendData.reduce((sum, item) => sum + item.gross, 0) /
+    (trendData.length || 1);
+
+  const avgNet =
+    trendData.reduce((sum, item) => sum + item.net, 0) /
+    (trendData.length || 1);
+
+  const bestMonth = trendData.reduce(
+    (max, item) => (item.net > (max?.net || 0) ? item : max),
+    {}
+  );
+
+  const lowestMonth = trendData.reduce(
+    (min, item) => (item.net < (min?.net || Infinity) ? item : min),
+    {}
+  );
+
+  const targetAchievement =
+    trendData.reduce((sum, item) => sum + (item.net / item.target) * 100, 0) /
+    (trendData.length || 1);
+
+  // Excel Export
+  const exportExcel = () => {
+
+    const worksheet = XLSX.utils.json_to_sheet(trendData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "MarginData");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const data = new Blob([excelBuffer]);
+
+    saveAs(data, "MarginTrends.xlsx");
+
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500" id="margin-trends-content">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-blue-500" />
-            Margin Trends
-          </h1>
-          <p className="text-slate-400 mt-2 font-medium">Historical and projected margin performance analysis.</p>
+
+    <div id="margin-trends-content">
+
+      {/* Header */}
+
+      <header className="flex justify-between mb-8">
+
+        <h1 className="text-3xl font-bold text-white flex gap-2">
+          <TrendingUp /> Margin Trends
+        </h1>
+
+        <div className="flex gap-4">
+
+          {/* Filter Dropdown */}
+
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="bg-slate-800 text-white px-3 py-2 rounded"
+          >
+            <option value="all">All</option>
+            <option value="1">Last 1 Month</option>
+            <option value="3">Last 3 Months</option>
+            <option value="6">Last 6 Months</option>
+            <option value="12">Last 12 Months</option>
+          </select>
+
+          {/* Excel Export */}
+
+          <button
+            onClick={exportExcel}
+            className="bg-green-600 px-4 py-2 rounded text-white"
+          >
+            Export Excel
+          </button>
+
+          {/* PDF Export */}
+
+          <button
+            onClick={() =>
+              exportToPDF("margin-trends-content", "MarginTrends.pdf")
+            }
+            className="flex gap-2 bg-blue-600 px-4 py-2 rounded"
+          >
+            <Download size={16} /> PDF
+          </button>
+
         </div>
-        <button 
-          onClick={() => exportToPDF('margin-trends-content', 'Margin_Trends_Analysis.pdf')}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Download Trends
-        </button>
+
       </header>
 
-      {/* Margin Comparison */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-100 mb-8">Gross vs Net Margin Trend</h3>
-          <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
-                <defs>
-                  <linearGradient id="colorGross" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorNet" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} unit="%" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#0f172a', 
-                    border: '1px solid #1e293b',
-                    borderRadius: '12px',
-                    color: '#f1f5f9'
-                  }}
-                  itemStyle={{ color: '#f1f5f9' }}
-                />
-                <Legend verticalAlign="top" height={36} />
-                <Area type="monotone" dataKey="gross" name="Gross Margin" stroke="#0ea5e9" fill="url(#colorGross)" strokeWidth={3} />
-                <Area type="monotone" dataKey="net" name="Net Margin" stroke="#6366f1" fill="url(#colorNet)" strokeWidth={3} />
-                <Line type="monotone" dataKey="target" name="Target" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+      {/* KPI Cards */}
+
+      <div className="grid grid-cols-4 gap-6 mb-6">
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-xs text-gray-400">Average Gross Margin</p>
+          <h3 className="text-2xl text-white">{avgGross.toFixed(1)}%</h3>
         </div>
 
-        <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-100 mb-6">Performance Metrics</h3>
-          <div className="space-y-6">
-            <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Average Gross Margin</p>
-              <div className="flex items-center justify-between">
-                <h4 className="text-2xl font-black text-slate-100">34.2%</h4>
-                <div className="flex items-center gap-1 text-emerald-400 font-bold text-xs">
-                  <ArrowUpRight className="w-3 h-3" />
-                  +2.1%
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Average Net Margin</p>
-              <div className="flex items-center justify-between">
-                <h4 className="text-2xl font-black text-slate-100">27.5%</h4>
-                <div className="flex items-center gap-1 text-rose-400 font-bold text-xs">
-                  <ArrowDownRight className="w-3 h-3" />
-                  -0.4%
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Efficiency Score</p>
-              <h4 className="text-2xl font-black text-blue-100">92/100</h4>
-            </div>
-          </div>
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-xs text-gray-400">Average Net Margin</p>
+          <h3 className="text-2xl text-white">{avgNet.toFixed(1)}%</h3>
         </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-xs text-gray-400">Best Month Margin</p>
+          <h3 className="text-2xl text-green-400">
+            {bestMonth.month} ({bestMonth.net}%)
+          </h3>
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-xs text-gray-400">Lowest Month Margin</p>
+          <h3 className="text-2xl text-red-400">
+            {lowestMonth.month} ({lowestMonth.net}%)
+          </h3>
+        </div>
+
       </div>
 
-      <div className="bg-blue-500/10 p-6 rounded-2xl border border-blue-500/20 flex gap-4">
-        <Info className="w-6 h-6 text-blue-400 shrink-0" />
-        <div>
-          <h4 className="text-sm font-bold text-blue-100">Trend Analysis</h4>
-          <p className="text-xs text-blue-300 mt-1 leading-relaxed font-medium">
-            Net margins stabilized in June following the implementation of the new SGA overhead optimization strategy. Projected growth for Q3 is 1.5% based on current pipeline.
-          </p>
-        </div>
+      {/* Target Achievement */}
+
+      <div className="bg-slate-900 p-6 rounded-xl mb-6">
+
+        <p className="text-xs text-gray-400">Target Achievement</p>
+
+        <h3 className="text-3xl text-yellow-400">
+          {targetAchievement.toFixed(1)}%
+        </h3>
+
       </div>
+
+      {/* Chart */}
+
+      <div className="bg-slate-900 p-6 rounded-xl">
+
+        <ResponsiveContainer width="100%" height={350}>
+
+          <AreaChart data={trendData}>
+
+            <CartesianGrid strokeDasharray="3 3" />
+
+            <XAxis dataKey="month" />
+
+            <YAxis unit="%" />
+
+            <Tooltip />
+
+            <Legend />
+
+            <Area
+              dataKey="gross"
+              name="Gross Margin"
+              stroke="#0ea5e9"
+              fill="#0ea5e9"
+            />
+
+            <Area
+              dataKey="net"
+              name="Net Margin"
+              stroke="#6366f1"
+              fill="#6366f1"
+            />
+
+            <Line
+              dataKey="target"
+              name="Target"
+              stroke="#f59e0b"
+              strokeWidth={2}
+            />
+
+          </AreaChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
     </div>
+
   );
+
 };
 
 export default MarginTrends;
