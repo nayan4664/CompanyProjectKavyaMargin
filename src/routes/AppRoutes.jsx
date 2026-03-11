@@ -90,6 +90,7 @@ const AppRoutes = () => {
         {/* Employee Cost */}
         <Route path="/employee-cost/list" element={<DashboardLayout><EmployeeCostList /></DashboardLayout>} />
         <Route path="/employee-cost/add" element={<DashboardLayout><AddEmployeeCost /></DashboardLayout>} />
+        <Route path="/employee-cost/edit/:id" element={<DashboardLayout><AddEmployeeCost /></DashboardLayout>} />
         <Route path="/employee-cost/breakdown" element={<DashboardLayout><CostBreakdown /></DashboardLayout>} />
 
         {/* Billing */}

@@ -13,7 +13,7 @@ import {
   YAxis,
   CartesianGrid
 } from 'recharts';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const allocationData = [
   { name: 'Billable', value: 180, color: '#0ea5e9' },
@@ -47,11 +47,11 @@ const ResourceDashboard = () => {
           <p className="text-slate-400 mt-2 font-medium">Real-time overview of workforce distribution and utilization.</p>
         </div>
         <button 
-          onClick={() => exportToPDF('resource-dashboard-content', 'Resource_Allocation_Report.pdf')}
+          onClick={() => exportToCSV(allocationData, 'Resource_Allocation_Report.csv')}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download PDF
+          Export CSV
         </button>
       </header>
 

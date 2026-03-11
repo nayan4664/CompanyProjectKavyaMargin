@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const slaData = [
   { metric: 'Uptime', target: 99.9, actual: 99.95, unit: '%' },
@@ -31,11 +31,11 @@ const SLAAnalysis = () => {
           <p className="text-slate-400 mt-2 font-medium">Real-time tracking of service level agreements against contractual obligations.</p>
         </div>
         <button 
-          onClick={() => exportToPDF('sla-analysis-content', 'SLA_Compliance_Report.pdf')}
+          onClick={() => exportToCSV(slaData, 'SLA_Compliance_Report.csv')}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download PDF
+          Export CSV
         </button>
       </header>
 

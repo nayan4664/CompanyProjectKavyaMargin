@@ -13,7 +13,7 @@ import {
   YAxis,
   CartesianGrid
 } from 'recharts';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const deptCostData = [
   { name: 'Engineering', value: 4500000 },
@@ -49,11 +49,11 @@ const CostBreakdown = () => {
           <p className="text-slate-400 mt-2 font-medium">Visual analysis of organizational spending and cost distribution.</p>
         </div>
         <button 
-          onClick={() => exportToPDF('cost-breakdown-content', 'Cost_Breakdown_Analysis.pdf')}
+          onClick={() => exportToCSV(deptCostData, 'Cost_Breakdown_Analysis.csv')}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download Analysis
+          Export CSV
         </button>
       </header>
 

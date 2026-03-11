@@ -12,7 +12,7 @@ import {
   Bar,
   Legend
 } from 'recharts';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const benchCostTrend = [
   { month: 'Jan', cost: 1200000, benchCount: 15 },
@@ -37,11 +37,11 @@ const BenchCostAnalysis = () => {
           <p className="text-slate-400 mt-2 font-medium">Financial impact assessment of unallocated resources on organizational margins.</p>
         </div>
         <button 
-          onClick={() => exportToPDF('bench-cost-content', 'Bench_Cost_Analysis.pdf')}
+          onClick={() => exportToCSV(benchCostTrend, 'Bench_Cost_Analysis.csv')}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download Analysis
+          Export CSV
         </button>
       </header>
 

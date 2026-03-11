@@ -12,7 +12,7 @@ import {
   Legend,
 } from "recharts";
 
-import { exportToPDF } from "../../utils/exportUtils";
+import { exportToCSV } from "../../utils/exportUtils";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -133,15 +133,14 @@ const MarginTrends = () => {
             Export Excel
           </button>
 
-          {/* PDF Export */}
+          {/* CSV Export */}
 
           <button
-            onClick={() =>
-              exportToPDF("margin-trends-content", "MarginTrends.pdf")
-            }
-            className="flex gap-2 bg-blue-600 px-4 py-2 rounded"
+            onClick={() => exportToCSV(trendData, "MarginTrends.csv")}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
           >
-            <Download size={16} /> PDF
+            <Download className="w-4 h-4" />
+            Export CSV
           </button>
 
         </div>

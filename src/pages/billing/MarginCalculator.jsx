@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, RefreshCw, Download, ArrowRight, PieChart as PieChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const MarginCalculator = () => {
   const [inputs, setFormData] = useState({
@@ -54,11 +54,11 @@ const MarginCalculator = () => {
           <p className="text-slate-400 mt-2 font-medium">Quickly calculate project margins based on billing rates and resource costs.</p>
         </div>
         <button 
-          onClick={() => exportToPDF('margin-calc-content', 'Margin_Calculation.pdf')}
+          onClick={() => exportToCSV([{ ...inputs, ...results }], 'Margin_Calculation.csv')}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download PDF
+          Export CSV
         </button>
       </header>
 

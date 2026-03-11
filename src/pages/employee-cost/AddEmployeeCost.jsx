@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Save, ArrowLeft, DollarSign, Briefcase, Building2, Calendar, IndianRupee, Users } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { UserPlus, Save, ArrowLeft, DollarSign, Briefcase, Building2, Calendar, IndianRupee, Users, Layout } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const AddEmployeeCost = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [currentUser, setCurrentUser] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: '',
+    department: 'Engineering',
+    joiningDate: '',
+    ctc: '',
+    variablePay: '',
+    benefits: '',
+    location: 'Offshore',
+  });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -14,29 +29,83 @@ const AddEmployeeCost = () => {
     if (user?.role === 'Project Manager' || user?.role === 'Team Lead') {
       navigate('/dashboard');
     }
-  }, [navigate]);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    role: '',
-    department: '',
-    joiningDate: '',
-    ctc: '',
-    variablePay: '',
-    benefits: '',
-    location: 'Offshore',
-  });
+
+    if (id) {
+      setIsEditMode(true);
+      const existingEmployees = JSON.parse(localStorage.getItem('employees')) || [];
+      const employeeToEdit = existingEmployees.find(emp => emp.id === Number(id));
+      
+      if (employeeToEdit) {
+        const [firstName, ...lastNameParts] = employeeToEdit.name.split(' ');
+        setFormData({
+          firstName: firstName || '',
+          lastName: lastNameParts.join(' ') || '',
+          email: employeeToEdit.email || '',
+          role: employeeToEdit.role || '',
+          department: employeeToEdit.department || 'Engineering',
+          joiningDate: employeeToEdit.joiningDate || '',
+          ctc: employeeToEdit.CTC || '',
+          variablePay: employeeToEdit.variablePay || '',
+          benefits: employeeToEdit.benefits || '',
+          location: employeeToEdit.location || 'Offshore',
+        });
+      }
+    }
+  }, [id, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Prevent negative values for ctc and variablePay
+    if ((name === 'ctc' || name === 'variablePay') && value < 0) {
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Adding employee:', formData);
-    alert('Employee cost data added successfully!');
+    
+    // Final check for negative values
+    if (Number(formData.ctc) < 0 || Number(formData.variablePay) < 0) {
+      alert('Annual CTC and Variable Pay cannot be negative.');
+      return;
+    }
+
+    const employeeData = {
+      id: isEditMode ? Number(id) : Date.now(),
+      name: `${formData.firstName} ${formData.lastName}`,
+      role: formData.role,
+      department: formData.department,
+      CTC: Number(formData.ctc),
+      monthlyCost: Math.round(Number(formData.ctc) / 12),
+      status: isEditMode ? (JSON.parse(localStorage.getItem('employees')).find(emp => emp.id === Number(id))?.status || 'Active') : 'Active',
+      email: formData.email,
+      joiningDate: formData.joiningDate,
+      variablePay: Number(formData.variablePay),
+      location: formData.location
+    };
+
+    // Get existing employees from localStorage or use defaults
+    const existingEmployees = JSON.parse(localStorage.getItem('employees')) || [
+      { id: 1, name: 'Amit Verma', role: 'Senior Developer', department: 'Engineering', CTC: 1800000, monthlyCost: 150000, status: 'Active' },
+      { id: 2, name: 'Sonal Singh', role: 'UI/UX Designer', department: 'Design', CTC: 1200000, monthlyCost: 100000, status: 'Active' },
+      { id: 3, name: 'Rahul Reddy', role: 'Product Manager', department: 'Product', CTC: 2400000, monthlyCost: 200000, status: 'Active' },
+      { id: 4, name: 'Pooja Gupta', role: 'Backend Engineer', department: 'Engineering', CTC: 1500000, monthlyCost: 125000, status: 'Active' },
+      { id: 5, name: 'Kiran Deep', role: 'QA Lead', department: 'Engineering', CTC: 1400000, monthlyCost: 116666, status: 'Bench' },
+    ];
+
+    let updatedEmployees;
+    if (isEditMode) {
+      updatedEmployees = existingEmployees.map(emp => emp.id === Number(id) ? employeeData : emp);
+    } else {
+      updatedEmployees = [employeeData, ...existingEmployees];
+    }
+    
+    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+
+    alert(isEditMode ? 'Employee cost data updated successfully!' : 'Employee cost data added successfully!');
     navigate('/employee-cost/list');
   };
 
@@ -49,9 +118,11 @@ const AddEmployeeCost = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
             <UserPlus className="w-8 h-8 text-primary-600" />
-            Add Employee Cost
+            {isEditMode ? 'Edit Employee Cost' : 'Add Employee Cost'}
           </h1>
-          <p className="text-slate-400 mt-1 font-medium">Onboard a new resource and configure their cost structure.</p>
+          <p className="text-slate-400 mt-1 font-medium">
+            {isEditMode ? 'Update existing resource cost configuration.' : 'Onboard a new resource and configure their cost structure.'}
+          </p>
         </div>
       </header>
 
@@ -111,6 +182,24 @@ const AddEmployeeCost = () => {
                   />
                 </div>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">Department</label>
+                <div className="relative">
+                  <Layout className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <select 
+                    name="department"
+                    required
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 appearance-none"
+                  >
+                    <option value="Design">Design</option>
+                    <option value="Product">Product</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="HR">HR</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -129,6 +218,7 @@ const AddEmployeeCost = () => {
                     type="number" 
                     name="ctc"
                     required
+                    min="0"
                     value={formData.ctc}
                     onChange={handleInputChange}
                     className="w-full pl-8 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
@@ -140,6 +230,7 @@ const AddEmployeeCost = () => {
                 <input 
                   type="number" 
                   name="variablePay"
+                  min="0"
                   value={formData.variablePay}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
@@ -175,7 +266,7 @@ const AddEmployeeCost = () => {
               className="px-8 py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
-              Save Employee Cost
+              {isEditMode ? 'Update Employee Cost' : 'Save Employee Cost'}
             </button>
           </div>
         </form>

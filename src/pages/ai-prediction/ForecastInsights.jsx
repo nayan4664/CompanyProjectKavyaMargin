@@ -21,6 +21,7 @@ import {
   ComposedChart,
   Line
 } from 'recharts';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const forecastData = [
   { month: 'Jul', revenue: 450000, cost: 320000, target: 480000 },
@@ -33,7 +34,7 @@ const forecastData = [
 
 const ForecastInsights = () => {
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500" id="forecast-insights-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
@@ -43,8 +44,11 @@ const ForecastInsights = () => {
           <p className="text-slate-400 mt-2 font-medium">Strategic revenue and cost projections with AI-derived recommendations.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm">
-            Export Report
+          <button 
+            onClick={() => exportToCSV(forecastData, 'Forecast_Insights.csv')}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            Export CSV
           </button>
           <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">
             Apply Recommendations

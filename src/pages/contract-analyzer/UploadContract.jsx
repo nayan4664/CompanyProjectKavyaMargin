@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, CheckCircle2, AlertCircle, X, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, X, ArrowRight, ShieldCheck, FileCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UploadContract = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([
+    { name: 'Service_Agreement_TechCorp.pdf', size: '2.4 MB', status: 'Analyzed', date: '2026-03-01' },
+    { name: 'SLA_Cloud_Migration.docx', size: '1.1 MB', status: 'Processing', date: '2026-03-05' },
+  ]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -15,18 +20,42 @@ const UploadContract = () => {
       navigate('/dashboard');
     }
   }, [navigate]);
-  const [uploadedFiles, setUploadedFiles] = useState([
-    { name: 'Service_Agreement_TechCorp.pdf', size: '2.4 MB', status: 'Analyzed', date: '2026-03-01' },
-    { name: 'SLA_Cloud_Migration.docx', size: '1.1 MB', status: 'Processing', date: '2026-03-05' },
-  ]);
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === "dragleave" || e.type === "drop") {
       setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      // Handle file upload logic here
+      const newFile = {
+        name: e.dataTransfer.files[0].name,
+        size: (e.dataTransfer.files[0].size / 1024 / 1024).toFixed(1) + ' MB',
+        status: 'Processing',
+        date: new Date().toISOString().split('T')[0]
+      };
+      setUploadedFiles(prev => [newFile, ...prev]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const newFile = {
+        name: e.target.files[0].name,
+        size: (e.target.files[0].size / 1024 / 1024).toFixed(1) + ' MB',
+        status: 'Processing',
+        date: new Date().toISOString().split('T')[0]
+      };
+      setUploadedFiles(prev => [newFile, ...prev]);
     }
   };
 
@@ -47,6 +76,7 @@ const UploadContract = () => {
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
+            onDrop={handleDrop}
             className={`relative h-80 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center transition-all ${
               dragActive ? 'border-blue-500 bg-blue-500/10 scale-[1.01]' : 'border-slate-800 bg-slate-900/50 backdrop-blur-xl'
             }`}
@@ -57,7 +87,12 @@ const UploadContract = () => {
             <h3 className="text-lg font-bold text-slate-100">Drag & Drop Contracts</h3>
             <p className="text-sm text-slate-400 mt-1 font-medium">or click to browse from your computer</p>
             <p className="text-[10px] text-slate-500 mt-4 uppercase font-bold tracking-widest">Supports PDF, DOCX, TXT (Max 25MB)</p>
-            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+            <input 
+              type="file" 
+              className="absolute inset-0 opacity-0 cursor-pointer" 
+              onChange={handleFileChange}
+              accept=".pdf,.docx,.txt"
+            />
           </div>
 
           {/* Recent Uploads */}

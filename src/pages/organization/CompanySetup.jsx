@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Building2, Save, Download, Globe, MapPin, Mail, Phone, Hash } from 'lucide-react';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const CompanySetup = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +11,7 @@ const CompanySetup = () => {
     website: 'https://kavyamargin.com',
     email: 'contact@kavyamargin.com',
     phone: '+91 98765 43210',
-    address: '123 Tech Park, Financial District, Hyderabad, India',
+    address: '123 Tech Park, Financial District, Nagpur, India',
     currency: 'INR',
     fiscalYearStart: 'April',
   });
@@ -44,11 +44,11 @@ const CompanySetup = () => {
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => exportToPDF('company-setup-content', 'Company_Setup.pdf')}
+            onClick={() => exportToCSV([formData], 'Company_Setup.csv')}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
           >
             <Download className="w-4 h-4" />
-            Download PDF
+            Export CSV
           </button>
         </div>
       </header>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle2, Download, FileText, ArrowRight } from 'lucide-react';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const ContractInsights = () => {
   const insights = [
@@ -44,11 +44,11 @@ const ContractInsights = () => {
           <p className="text-slate-400 mt-2 font-medium">AI-generated strategic insights and risks extracted from active contracts.</p>
         </div>
         <button 
-          onClick={() => exportToPDF('contract-insights-content', 'Contract_Insights_Report.pdf')}
+          onClick={() => exportToCSV(insights, 'Contract_Insights_Report.csv')}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download Insights
+          Export CSV
         </button>
       </header>
 

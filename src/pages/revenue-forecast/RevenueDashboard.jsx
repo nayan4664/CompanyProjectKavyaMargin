@@ -17,7 +17,7 @@ import {
   Cell
 } from "recharts";
 
-import { exportToPDF, exportToCSV } from "../../utils/exportUtils";
+import { exportToCSV, exportToXML } from "../../utils/exportUtils";
 
 /* Revenue Data */
 
@@ -100,30 +100,21 @@ const RevenueDashboard = () => {
 
         <div className="flex gap-3">
 
-          {/* CSV EXPORT */}
-
           <button
-            onClick={() =>
-              exportToCSV(filteredData, "RevenueForecast.csv")
-            }
-            className="flex gap-2 bg-green-600 px-4 py-2 rounded"
+            onClick={() => exportToCSV(revenueData, 'Revenue_Forecast.csv')}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
           >
-            <FileSpreadsheet size={16} /> CSV
+            <Download className="w-4 h-4" />
+            Export CSV
           </button>
 
-          {/* PDF EXPORT */}
-
-          {/* <button
-            onClick={() =>
-              exportToPDF(
-                "revenue-dashboard-content",
-                "RevenueForecast.pdf"
-              )
-            }
-            className="flex gap-2 bg-blue-600 px-4 py-2 rounded"
+          <button
+            onClick={() => exportToXML(revenueData, 'Revenue_Forecast.xml', 'RevenueForecast')}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
           >
-            <Download size={16} /> PDF
-          </button> */}
+            <Download className="w-4 h-4" />
+            Export XML
+          </button>
 
         </div>
 

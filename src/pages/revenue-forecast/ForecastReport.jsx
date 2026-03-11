@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { exportToCSV, exportToPDF } from "../../utils/exportUtils";
+import { exportToCSV } from "../../utils/exportUtils";
 
 const reportData = [
   {
@@ -118,15 +118,11 @@ const ForecastReport = () => {
           </button>
 
           <button
-            onClick={() =>
-              exportToPDF(
-                "forecast-report-content",
-                "ForecastReports.pdf"
-              )
-            }
-            className="flex gap-2 bg-blue-600 px-4 py-2 rounded-lg text-white"
+            onClick={() => exportToCSV(reportData, "Forecast_Report.csv")}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
           >
-            <Download size={16} /> PDF
+            <Download className="w-4 h-4" />
+            Export CSV
           </button>
 
         </div>

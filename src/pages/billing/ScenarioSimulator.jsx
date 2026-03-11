@@ -11,6 +11,7 @@ import {
   Legend,
   Cell
 } from 'recharts';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const ScenarioSimulator = () => {
   const [scenarios, setScenarios] = useState([
@@ -37,7 +38,7 @@ const ScenarioSimulator = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500" id="scenario-simulator-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
@@ -46,9 +47,12 @@ const ScenarioSimulator = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Model "What-If" scenarios to predict the impact of rate or resource changes.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm">
+        <button 
+          onClick={() => exportToCSV(scenarios, 'Scenario_Analysis.csv')}
+          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+        >
           <Download className="w-4 h-4" />
-          Export Analysis
+          Export CSV
         </button>
       </header>
 
