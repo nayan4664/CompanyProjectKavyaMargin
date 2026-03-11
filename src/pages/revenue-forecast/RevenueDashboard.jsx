@@ -1,12 +1,13 @@
-<<<<<<< HEAD
-import React, { useState } from "react";
-import { TrendingUp, Download, Filter, FileSpreadsheet, IndianRupee, PieChart, BarChart3, Target } from "lucide-react";
-
-=======
 import React, { useState, useRef, useEffect } from "react";
-import { TrendingUp, Filter, FileSpreadsheet, ChevronDown } from "lucide-react";
-import { Download } from "lucide-react";
->>>>>>> 6697b1b (add org contact feature)
+import {
+  TrendingUp,
+  Download,
+  Filter,
+  FileSpreadsheet,
+  IndianRupee,
+  ChevronDown,
+} from "lucide-react";
+
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -17,22 +18,12 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
-  AreaChart,
-  Area,
-  BarChart,
-  Cell
 } from "recharts";
 
 import { exportToCSV } from "../../utils/exportUtils";
 
 /* DATA */
 
-  const revenueData = [
-  { month: "Jan", year: 2026, confirmed: 380000, weighted: 420000, target: 400000 },
-  { month: "Feb", year: 2026, confirmed: 410000, weighted: 450000, target: 430000 },
-  { month: "Mar", year: 2026, confirmed: 440000, weighted: 480000, target: 460000 },
-
-<<<<<<< HEAD
 const revenueData = [
   { month: "Jan", year: 2025, confirmed: 3200000, weighted: 3500000, target: 3600000 },
   { month: "Feb", year: 2025, confirmed: 3000000, weighted: 3400000, target: 3500000 },
@@ -40,20 +31,11 @@ const revenueData = [
   { month: "Apr", year: 2025, confirmed: 3900000, weighted: 4300000, target: 4200000 },
   { month: "May", year: 2025, confirmed: 4100000, weighted: 4600000, target: 4500000 },
   { month: "Jun", year: 2025, confirmed: 4500000, weighted: 5000000, target: 4700000 },
-=======
-  { month: "Jan", year: 2025, confirmed: 320000, weighted: 350000, target: 360000 },
-  { month: "Feb", year: 2025, confirmed: 300000, weighted: 340000, target: 350000 },
-  { month: "Mar", year: 2025, confirmed: 420000, weighted: 470000, target: 450000 },
-  { month: "Apr", year: 2025, confirmed: 390000, weighted: 430000, target: 420000 },
-  { month: "May", year: 2025, confirmed: 410000, weighted: 460000, target: 450000 },
-  { month: "Jun", year: 2025, confirmed: 450000, weighted: 500000, target: 470000 },
->>>>>>> 6697b1b (add org contact feature)
 
   { month: "Jul", year: 2024, confirmed: 3500000, weighted: 3900000, target: 3800000 },
   { month: "Aug", year: 2024, confirmed: 3700000, weighted: 4100000, target: 4000000 },
   { month: "Sep", year: 2024, confirmed: 3600000, weighted: 4200000, target: 4100000 },
 ];
-
 
 const monthsList = [
   "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
@@ -67,7 +49,7 @@ const RevenueDashboard = () => {
 
   const dropdownRef = useRef();
 
-  /* CLOSE DROPDOWN ON OUTSIDE CLICK */
+  /* CLOSE DROPDOWN */
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -75,8 +57,12 @@ const RevenueDashboard = () => {
         setOpenDropdown(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+
   }, []);
 
   /* TOGGLE MONTH */
@@ -122,14 +108,10 @@ const RevenueDashboard = () => {
 
   return (
 
-<<<<<<< HEAD
     <div
       id="revenue-dashboard-content"
       className="space-y-8 p-6 bg-slate-950 min-h-screen text-white animate-in fade-in duration-500"
     >
-=======
-    <div className="space-y-8 p-6 bg-slate-950 min-h-screen text-white">
->>>>>>> 6697b1b (add org contact feature)
 
       {/* HEADER */}
 
@@ -140,17 +122,20 @@ const RevenueDashboard = () => {
             <IndianRupee className="w-8 h-8 text-blue-500" />
             Revenue Forecast Dashboard
           </h1>
-          <p className="text-slate-400 mt-2 font-medium">Predictive analysis of future revenue streams and margin expectations.</p>
+
+          <p className="text-slate-400 mt-2 font-medium">
+            Predictive analysis of future revenue streams and margin expectations.
+          </p>
         </div>
 
-      <button
-  onClick={() => exportToCSV(filteredData, "RevenueForecast.csv")}
-  className="flex items-center gap-2 bg-green-600 px-4 py-2 rounded text-white"
->
-  <FileSpreadsheet size={16} />
-  <Download size={16} />
-  Download
-</button>
+        <button
+          onClick={() => exportToCSV(filteredData, "RevenueForecast.csv")}
+          className="flex items-center gap-2 bg-green-600 px-4 py-2 rounded text-white"
+        >
+          <FileSpreadsheet size={16} />
+          <Download size={16} />
+          Download
+        </button>
 
       </header>
 
@@ -198,7 +183,7 @@ const RevenueDashboard = () => {
 
         </div>
 
-        {/* YEAR FILTER */}
+        {/* YEAR */}
 
         <select
           className="bg-slate-800 p-2 rounded"
