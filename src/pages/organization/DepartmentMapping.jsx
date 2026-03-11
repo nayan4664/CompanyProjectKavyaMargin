@@ -40,7 +40,7 @@ const DepartmentMapping = () => {
           className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Export CSV
+          Download
         </button>
       </header>
 

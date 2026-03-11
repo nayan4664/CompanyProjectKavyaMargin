@@ -126,23 +126,24 @@ const MarginTrends = () => {
 
           {/* Excel Export */}
 
-          <button
-            onClick={exportExcel}
-            className="bg-green-600 px-4 py-2 rounded text-white"
-          >
-            Export Excel
-          </button>
+         <button
+  onClick={exportExcel}
+  className="flex items-center gap-2 bg-green-600 px-4 py-2 rounded text-white"
+>
+  <Download size={18} />
+  Download
+</button>
 
           {/* PDF Export */}
 
-          <button
+          {/* <button
             onClick={() =>
               exportToPDF("margin-trends-content", "MarginTrends.pdf")
             }
             className="flex gap-2 bg-blue-600 px-4 py-2 rounded"
           >
             <Download size={16} /> PDF
-          </button>
+          </button> */}
 
         </div>
 

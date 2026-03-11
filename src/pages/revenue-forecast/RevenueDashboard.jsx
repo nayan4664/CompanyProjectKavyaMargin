@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { TrendingUp, Download, Filter, FileSpreadsheet, IndianRupee, PieChart, BarChart3, Target } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  TrendingUp,
+  Download,
+  Filter,
+  FileSpreadsheet,
+  IndianRupee,
+  ChevronDown,
+} from "lucide-react";
 
 import {
   ResponsiveContainer,
@@ -11,15 +18,11 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
-  AreaChart,
-  Area,
-  BarChart,
-  Cell
 } from "recharts";
 
-import { exportToPDF, exportToCSV } from "../../utils/exportUtils";
+import { exportToCSV } from "../../utils/exportUtils";
 
-/* Revenue Data */
+/* DATA */
 
 const revenueData = [
   { month: "Jan", year: 2025, confirmed: 3200000, weighted: 3500000, target: 3600000 },
@@ -34,17 +37,52 @@ const revenueData = [
   { month: "Sep", year: 2024, confirmed: 3600000, weighted: 4200000, target: 4100000 },
 ];
 
+const monthsList = [
+  "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
+];
+
 const RevenueDashboard = () => {
 
-  const [selectedMonth, setSelectedMonth] = useState("All");
+  const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedYear, setSelectedYear] = useState("All");
+  const [openDropdown, setOpenDropdown] = useState(false);
+
+  const dropdownRef = useRef();
+
+  /* CLOSE DROPDOWN */
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+
+  }, []);
+
+  /* TOGGLE MONTH */
+
+  const toggleMonth = (month) => {
+
+    if (selectedMonths.includes(month)) {
+      setSelectedMonths(selectedMonths.filter((m) => m !== month));
+    } else {
+      setSelectedMonths([...selectedMonths, month]);
+    }
+
+  };
 
   /* FILTER DATA */
 
   const filteredData = revenueData.filter((item) => {
 
     const monthMatch =
-      selectedMonth === "All" || item.month === selectedMonth;
+      selectedMonths.length === 0 || selectedMonths.includes(item.month);
 
     const yearMatch =
       selectedYear === "All" || item.year === Number(selectedYear);
@@ -53,24 +91,13 @@ const RevenueDashboard = () => {
 
   });
 
-  /* KPI CALCULATIONS */
+  /* KPI */
 
-  const totalBacklog = filteredData.reduce(
-    (acc, item) => acc + item.confirmed,
-    0
-  );
-
-  const pipeline = filteredData.reduce(
-    (acc, item) => acc + item.weighted,
-    0
-  );
+  const totalBacklog = filteredData.reduce((a, b) => a + b.confirmed, 0);
+  const pipeline = filteredData.reduce((a, b) => a + b.weighted, 0);
 
   const avgRevenue =
-    filteredData.length > 0
-      ? totalBacklog / filteredData.length
-      : 0;
-
-  /* CURRENCY FORMATTER */
+    filteredData.length > 0 ? totalBacklog / filteredData.length : 0;
 
   const formatCurrency = (val) =>
     new Intl.NumberFormat("en-IN", {
@@ -95,69 +122,68 @@ const RevenueDashboard = () => {
             <IndianRupee className="w-8 h-8 text-blue-500" />
             Revenue Forecast Dashboard
           </h1>
-          <p className="text-slate-400 mt-2 font-medium">Predictive analysis of future revenue streams and margin expectations.</p>
+
+          <p className="text-slate-400 mt-2 font-medium">
+            Predictive analysis of future revenue streams and margin expectations.
+          </p>
         </div>
 
-        <div className="flex gap-3">
-
-          {/* CSV EXPORT */}
-
-          <button
-            onClick={() =>
-              exportToCSV(filteredData, "RevenueForecast.csv")
-            }
-            className="flex gap-2 bg-green-600 px-4 py-2 rounded"
-          >
-            <FileSpreadsheet size={16} /> CSV
-          </button>
-
-          {/* PDF EXPORT */}
-
-          {/* <button
-            onClick={() =>
-              exportToPDF(
-                "revenue-dashboard-content",
-                "RevenueForecast.pdf"
-              )
-            }
-            className="flex gap-2 bg-blue-600 px-4 py-2 rounded"
-          >
-            <Download size={16} /> PDF
-          </button> */}
-
-        </div>
+        <button
+          onClick={() => exportToCSV(filteredData, "RevenueForecast.csv")}
+          className="flex items-center gap-2 bg-green-600 px-4 py-2 rounded text-white"
+        >
+          <FileSpreadsheet size={16} />
+          <Download size={16} />
+          Download
+        </button>
 
       </header>
 
-      {/* FILTERS */}
+      {/* FILTER BAR */}
 
       <div className="flex gap-4 items-center bg-slate-900 p-4 rounded-lg">
 
         <Filter className="text-gray-400" />
 
-        {/* MONTH FILTER */}
+        {/* MONTH DROPDOWN */}
 
-        <select
-          className="bg-slate-800 p-2 rounded"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-        >
-          <option value="All">All Months</option>
-          <option>Jan</option>
-          <option>Feb</option>
-          <option>Mar</option>
-          <option>Apr</option>
-          <option>May</option>
-          <option>Jun</option>
-          <option>Jul</option>
-          <option>Aug</option>
-          <option>Sep</option>
-          <option>Oct</option>
-          <option>Nov</option>
-          <option>Dec</option>
-        </select>
+        <div className="relative" ref={dropdownRef}>
 
-        {/* YEAR FILTER */}
+          <button
+            onClick={() => setOpenDropdown(!openDropdown)}
+            className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded"
+          >
+            Month
+            <ChevronDown size={16} />
+          </button>
+
+          {openDropdown && (
+
+            <div className="absolute mt-2 w-40 bg-slate-800 rounded shadow-lg p-3 space-y-2 z-50">
+
+              {monthsList.map((month) => (
+
+                <label key={month} className="flex gap-2 text-sm">
+
+                  <input
+                    type="checkbox"
+                    checked={selectedMonths.includes(month)}
+                    onChange={() => toggleMonth(month)}
+                  />
+
+                  {month}
+
+                </label>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+        {/* YEAR */}
 
         <select
           className="bg-slate-800 p-2 rounded"
@@ -170,11 +196,11 @@ const RevenueDashboard = () => {
           <option value="2024">2024</option>
         </select>
 
-        {/* RESET BUTTON */}
+        {/* RESET */}
 
         <button
           onClick={() => {
-            setSelectedMonth("All");
+            setSelectedMonths([]);
             setSelectedYear("All");
           }}
           className="bg-gray-700 px-4 py-2 rounded"
@@ -184,29 +210,23 @@ const RevenueDashboard = () => {
 
       </div>
 
-      {/* KPI CARDS */}
+      {/* KPI */}
 
       <div className="grid grid-cols-3 gap-6">
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-xs text-gray-400">Total Backlog</p>
-          <h3 className="text-2xl">
-            {formatCurrency(totalBacklog)}
-          </h3>
+          <h3 className="text-2xl">{formatCurrency(totalBacklog)}</h3>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-xs text-gray-400">Weighted Pipeline</p>
-          <h3 className="text-2xl text-blue-400">
-            {formatCurrency(pipeline)}
-          </h3>
+          <h3 className="text-2xl text-blue-400">{formatCurrency(pipeline)}</h3>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-xs text-gray-400">Revenue / Month</p>
-          <h3 className="text-2xl">
-            {formatCurrency(avgRevenue)}
-          </h3>
+          <h3 className="text-2xl">{formatCurrency(avgRevenue)}</h3>
         </div>
 
       </div>
@@ -233,11 +253,7 @@ const RevenueDashboard = () => {
 
             <Bar dataKey="weighted" fill="#1e293b" />
 
-            <Line
-              dataKey="target"
-              stroke="#f59e0b"
-              strokeWidth={3}
-            />
+            <Line dataKey="target" stroke="#f59e0b" strokeWidth={3} />
 
           </ComposedChart>
 
@@ -248,6 +264,7 @@ const RevenueDashboard = () => {
     </div>
 
   );
+
 };
 
 export default RevenueDashboard;
