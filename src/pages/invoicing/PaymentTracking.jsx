@@ -66,6 +66,12 @@ const collectionData = [
 
 const PaymentTracking = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    if (user) setCurrentUser(user);
+  }, []);
 
   /* FILTER PAYMENTS */
   const filteredPayments = paymentHistory.filter((p) =>
@@ -272,17 +278,20 @@ const PaymentTracking = () => {
       </div>
 
       {/* SEND REMINDER BUTTON */}
-      <div className="flex justify-end">
 
-        <button
-          onClick={sendReminders}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700"
-        >
-          Send Reminders
-          <ArrowUpRight className="w-4 h-4" />
-        </button>
+      {currentUser?.role !== 'Viewers' && (
+        <div className="flex justify-end">
 
-      </div>
+          <button
+            onClick={sendReminders}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700"
+          >
+            Send Reminders
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+
+        </div>
+      )}
 
     </div>
   );

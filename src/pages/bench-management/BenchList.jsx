@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Briefcase, Search, Download, Filter, Clock, AlertTriangle } from 'lucide-react';
+import { Briefcase, Search, Download, Filter, Clock, AlertTriangle, ExternalLink, MoreVertical } from 'lucide-react';
 import { exportToCSV } from '../../utils/exportUtils';
 
 const benchData = [
@@ -11,6 +11,12 @@ const benchData = [
 
 const BenchList = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
 
   const filteredBench = benchData.filter(res => 
     res.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,6 +95,7 @@ const BenchList = () => {
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Bench Time</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Cost Impact</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Status</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -122,6 +129,18 @@ const BenchList = () => {
                     }`}>
                       {res.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all" title="Reallocate">
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-all">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

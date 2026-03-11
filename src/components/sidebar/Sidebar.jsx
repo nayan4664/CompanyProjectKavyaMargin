@@ -1,10 +1,10 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
   Building2, 
-  DollarSign, 
+  IndianRupee, 
   BarChart3, 
   BrainCircuit, 
   PieChart, 
@@ -12,9 +12,9 @@ import {
   FileText, 
   Receipt, 
   TrendingUp,
-  Settings,
   ChevronRight,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -45,7 +45,7 @@ const menuItems = [
   },
   {
     label: 'Billing',
-    icon: DollarSign,
+    icon: IndianRupee,
     children: [
       { label: 'Rate Config', path: '/billing/rate-config' },
       { label: 'Margin Calculator', path: '/billing/margin-calculator' },
@@ -119,12 +119,56 @@ const menuItems = [
 
 const Sidebar = ({ isOpen, onClose }) => {
   const [openMenus, setOpenMenus] = React.useState([]);
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
+  const navigate = useNavigate();
 
   const toggleMenu = (label) => {
     setOpenMenus(prev => 
       prev.includes(label) ? prev.filter(i => i !== label) : [...prev, label]
     );
   };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('currentUser');
+    navigate('/login');
+  };
+
+  const filteredMenuItems = React.useMemo(() => {
+    if (currentUser?.role === 'Viewers') {
+      return menuItems
+        .filter(item => item.label === 'Margin Tracker' || item.label === 'Invoicing')
+        .map(item => {
+          if (item.label === 'Invoicing') {
+            return {
+              ...item,
+              children: item.children?.filter(child => child.label !== 'Generate Invoice')
+            };
+          }
+          return item;
+        });
+    }
+    if (currentUser?.role === 'Team Lead') {
+      const restrictedModules = ['Organization', 'Contract Analyzer', 'Invoicing'];
+      return menuItems.filter(item => !restrictedModules.includes(item.label));
+    }
+    if (currentUser?.role === 'HR') {
+      const restrictedModules = ['Organization', 'Billing', 'AI Prediction', 'Contract Analyzer', 'Invoicing'];
+      return menuItems.filter(item => !restrictedModules.includes(item.label));
+    }
+    if (currentUser?.role === 'Project Manager') {
+      const restrictedModules = ['Organization'];
+      return menuItems.filter(item => !restrictedModules.includes(item.label));
+    }
+    return menuItems;
+  }, [currentUser]);
 
   return (
     <>
@@ -154,7 +198,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-hide">
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             <div key={item.label}>
               {item.path ? (
                 <NavLink
@@ -214,18 +258,13 @@ const Sidebar = ({ isOpen, onClose }) => {
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <NavLink
-            to="/settings"
-            className={({ isActive }) => cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
-              isActive 
-                ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
-                : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
-            )}
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-rose-500 hover:bg-rose-500/10 transition-colors"
           >
-            <Settings className="w-4 h-4" />
-            Settings
-          </NavLink>
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
         </div>
       </aside>
     </>

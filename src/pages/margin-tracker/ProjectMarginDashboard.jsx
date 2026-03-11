@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, Download, Search, Filter, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BarChart3, TrendingUp, Download, Search, Filter, AlertCircle, CheckCircle2, IndianRupee } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -33,7 +33,7 @@ const ProjectMarginDashboard = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-primary-600" />
+            <IndianRupee className="w-8 h-8 text-primary-600" />
             Project Margin Dashboard
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Monitor real-time profitability across your entire project portfolio.</p>

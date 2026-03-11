@@ -13,6 +13,12 @@ const EmployeeCostList = () => {
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
 
   const filteredEmployees = employees.filter(emp => 
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -20,7 +26,12 @@ const EmployeeCostList = () => {
     emp.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+  const formatCurrency = (val) => 
+    new Intl.NumberFormat('en-IN', { 
+      style: 'currency', 
+      currency: 'INR', 
+      maximumFractionDigits: 0 
+    }).format(val);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="employee-list-content">
@@ -40,13 +51,15 @@ const EmployeeCostList = () => {
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          <Link 
-            to="/employee-cost/add"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
-          >
-            <Plus className="w-4 h-4" />
-            Add Employee
-          </Link>
+          {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
+            <Link 
+              to="/employee-cost/add"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+            >
+              <Plus className="w-4 h-4" />
+              Add Employee
+            </Link>
+          )}
         </div>
       </header>
 
@@ -121,14 +134,19 @@ const EmployeeCostList = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-all">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

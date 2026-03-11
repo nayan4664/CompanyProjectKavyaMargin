@@ -61,10 +61,16 @@ import RevenueDashboard from '../pages/revenue-forecast/RevenueDashboard';
 import ForecastReport from '../pages/revenue-forecast/ForecastReport';
 import MarginTrends from '../pages/revenue-forecast/MarginTrends';
 
-// Pages - Settings
-import Settings from '../pages/settings/Settings';
-
 const AppRoutes = () => {
+
+  const ProtectedRoute = ({ children, allowedRoles }) => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!allowedRoles.includes(currentUser?.role)) {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return children;
+  };
+
   return (
     <Router>
       <Routes>
@@ -77,9 +83,9 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
         
         {/* Organization */}
-        <Route path="/organization/company-setup" element={<DashboardLayout><CompanySetup /></DashboardLayout>} />
-        <Route path="/organization/billing-model" element={<DashboardLayout><BillingModel /></DashboardLayout>} />
-        <Route path="/organization/department-mapping" element={<DashboardLayout><DepartmentMapping /></DashboardLayout>} />
+        <Route path="/organization/company-setup" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin']}><CompanySetup /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/organization/billing-model" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin']}><BillingModel /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/organization/department-mapping" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin']}><DepartmentMapping /></ProtectedRoute></DashboardLayout>} />
 
         {/* Employee Cost */}
         <Route path="/employee-cost/list" element={<DashboardLayout><EmployeeCostList /></DashboardLayout>} />
@@ -87,9 +93,9 @@ const AppRoutes = () => {
         <Route path="/employee-cost/breakdown" element={<DashboardLayout><CostBreakdown /></DashboardLayout>} />
 
         {/* Billing */}
-        <Route path="/billing/rate-config" element={<DashboardLayout><BillingRateConfig /></DashboardLayout>} />
-        <Route path="/billing/margin-calculator" element={<DashboardLayout><MarginCalculator /></DashboardLayout>} />
-        <Route path="/billing/scenario-simulator" element={<DashboardLayout><ScenarioSimulator /></DashboardLayout>} />
+        <Route path="/billing/rate-config" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><BillingRateConfig /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/billing/margin-calculator" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><MarginCalculator /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/billing/scenario-simulator" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><ScenarioSimulator /></ProtectedRoute></DashboardLayout>} />
 
         {/* Margin Tracker */}
         <Route path="/margin-tracker/dashboard" element={<DashboardLayout><ProjectMarginDashboard /></DashboardLayout>} />
@@ -97,9 +103,9 @@ const AppRoutes = () => {
         <Route path="/margin-tracker/burn-rate" element={<DashboardLayout><BurnRate /></DashboardLayout>} />
 
         {/* AI Prediction */}
-        <Route path="/ai-prediction/margin-prediction" element={<DashboardLayout><MarginPrediction /></DashboardLayout>} />
-        <Route path="/ai-prediction/risk-analysis" element={<DashboardLayout><RiskAnalysis /></DashboardLayout>} />
-        <Route path="/ai-prediction/forecast-insights" element={<DashboardLayout><ForecastInsights /></DashboardLayout>} />
+        <Route path="/ai-prediction/margin-prediction" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><MarginPrediction /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/ai-prediction/risk-analysis" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><RiskAnalysis /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/ai-prediction/forecast-insights" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><ForecastInsights /></ProtectedRoute></DashboardLayout>} />
 
         {/* Resource Allocation */}
         <Route path="/resource-allocation/dashboard" element={<DashboardLayout><ResourceDashboard /></DashboardLayout>} />
@@ -112,22 +118,19 @@ const AppRoutes = () => {
         <Route path="/bench-management/reallocation-suggestions" element={<DashboardLayout><ReallocationSuggestions /></DashboardLayout>} />
 
         {/* Contract Analyzer */}
-        <Route path="/contract-analyzer/upload" element={<DashboardLayout><UploadContract /></DashboardLayout>} />
-        <Route path="/contract-analyzer/insights" element={<DashboardLayout><ContractInsights /></DashboardLayout>} />
-        <Route path="/contract-analyzer/sla-analysis" element={<DashboardLayout><SLAAnalysis /></DashboardLayout>} />
+        <Route path="/contract-analyzer/upload" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><UploadContract /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/contract-analyzer/insights" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><ContractInsights /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/contract-analyzer/sla-analysis" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager']}><SLAAnalysis /></ProtectedRoute></DashboardLayout>} />
 
         {/* Invoicing */}
-        <Route path="/invoicing/list" element={<DashboardLayout><InvoiceList /></DashboardLayout>} />
-        <Route path="/invoicing/generate" element={<DashboardLayout><GenerateInvoice /></DashboardLayout>} />
-        <Route path="/invoicing/payment-tracking" element={<DashboardLayout><PaymentTracking /></DashboardLayout>} />
+        <Route path="/invoicing/list" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager', 'HR']}><InvoiceList /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/invoicing/generate" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager', 'HR']}><GenerateInvoice /></ProtectedRoute></DashboardLayout>} />
+        <Route path="/invoicing/payment-tracking" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager', 'HR']}><PaymentTracking /></ProtectedRoute></DashboardLayout>} />
 
         {/* Revenue Forecast */}
         <Route path="/revenue-forecast/dashboard" element={<DashboardLayout><RevenueDashboard /></DashboardLayout>} />
         <Route path="/revenue-forecast/report" element={<DashboardLayout><ForecastReport /></DashboardLayout>} />
-        <Route path="/revenue-forecast/margin-trends" element={<DashboardLayout><MarginTrends /></DashboardLayout>} />
-
-        {/* Settings */}
-        <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+        <Route path="/revenue-forecast/margin-trends" element={<DashboardLayout><ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'Project Manager', 'HR', 'Team Lead', 'Viewers']}><MarginTrends /></ProtectedRoute></DashboardLayout>} />
 
         {/* Redirect for unknown routes */}
         <Route path="*" element={<Navigate to="/" replace />} />

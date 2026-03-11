@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
-import { UserPlus, Save, ArrowLeft, DollarSign, Briefcase, Building2, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { UserPlus, Save, ArrowLeft, DollarSign, Briefcase, Building2, Calendar, IndianRupee, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const AddEmployeeCost = () => {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+    
+    // Redirect Project Manager or Team Lead if they try to access this page
+    if (user?.role === 'Project Manager' || user?.role === 'Team Lead') {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

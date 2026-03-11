@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, Download, TrendingUp, TrendingDown, AlertCircle, Info } from 'lucide-react';
+import { IndianRupee, Download, TrendingUp, TrendingDown, AlertCircle, Info } from 'lucide-react';
 import { 
   AreaChart, 
   Area, 
@@ -15,12 +15,12 @@ import {
 import { exportToPDF } from '../../utils/exportUtils';
 
 const benchCostTrend = [
-  { month: 'Jan', cost: 120000, benchCount: 15 },
-  { month: 'Feb', cost: 145000, benchCount: 18 },
-  { month: 'Mar', cost: 130000, benchCount: 16 },
-  { month: 'Apr', cost: 180000, benchCount: 22 },
-  { month: 'May', cost: 160000, benchCount: 20 },
-  { month: 'Jun', cost: 155000, benchCount: 19 },
+  { month: 'Jan', cost: 1200000, benchCount: 15 },
+  { month: 'Feb', cost: 1450000, benchCount: 18 },
+  { month: 'Mar', cost: 1300000, benchCount: 16 },
+  { month: 'Apr', cost: 1800000, benchCount: 22 },
+  { month: 'May', cost: 1600000, benchCount: 20 },
+  { month: 'Jun', cost: 1550000, benchCount: 19 },
 ];
 
 const BenchCostAnalysis = () => {
@@ -31,7 +31,7 @@ const BenchCostAnalysis = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <DollarSign className="w-8 h-8 text-blue-500" />
+            <IndianRupee className="w-8 h-8 text-blue-500" />
             Bench Cost Analysis
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Financial impact assessment of unallocated resources on organizational margins.</p>

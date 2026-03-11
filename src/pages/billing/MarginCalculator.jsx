@@ -41,7 +41,7 @@ const MarginCalculator = () => {
     { name: 'Overhead', value: results.revenue * (inputs.overhead / 100), color: '#94a3b8' },
   ];
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="margin-calc-content">
@@ -72,7 +72,7 @@ const MarginCalculator = () => {
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Hourly Billing Rate ($)</label>
+              <label className="text-sm font-bold text-slate-300">Hourly Billing Rate (₹)</label>
               <input 
                 type="number" 
                 value={inputs.billingRate}
@@ -81,7 +81,7 @@ const MarginCalculator = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Resource Hourly Cost ($)</label>
+              <label className="text-sm font-bold text-slate-300">Resource Hourly Cost (₹)</label>
               <input 
                 type="number" 
                 value={inputs.resourceCost}

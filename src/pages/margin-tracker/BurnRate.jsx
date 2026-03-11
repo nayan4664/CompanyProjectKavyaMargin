@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, Download, TrendingDown, AlertTriangle, Zap, Clock } from 'lucide-react';
+import { Activity, Download, TrendingDown, AlertTriangle, Zap, Clock, IndianRupee } from 'lucide-react';
 import { 
   LineChart, 
   Line, 
@@ -30,7 +30,7 @@ const BurnRate = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-            <Activity className="w-8 h-8 text-primary-600" />
+            <IndianRupee className="w-8 h-8 text-primary-600" />
             Burn Rate Analysis
           </h1>
           <p className="text-slate-500 mt-2 font-medium">Track daily expenditure velocity to prevent budget overruns.</p>

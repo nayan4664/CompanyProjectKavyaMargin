@@ -65,13 +65,24 @@ const Register = () => {
 
     // Role-Email validation
     if (formData.userRole && formData.email) {
-      const allowedEmails = Object.values(roleEmailMap);
-      if (!allowedEmails.includes(formData.email)) {
-        newErrors.email = 'This email is not authorized for registration';
+      const restrictedEmails = [
+        roleEmailMap['Super Admin'],
+        roleEmailMap['Company Admin'],
+        roleEmailMap['Project Manager'],
+        roleEmailMap['HR'],
+        roleEmailMap['Team Lead']
+      ];
+
+      if (formData.userRole === 'Viewers') {
+        // Viewers can use any email EXCEPT the restricted ones
+        if (restrictedEmails.includes(formData.email)) {
+          newErrors.email = 'This administrative email cannot be used for a Viewer account';
+        }
       } else {
+        // Other roles must use their specific authorized email
         const expectedEmail = roleEmailMap[formData.userRole];
         if (formData.email !== expectedEmail) {
-          newErrors.email = `Only ${expectedEmail} is accepted for ${formData.userRole}`;
+          newErrors.email = `Only ${expectedEmail} is authorized for ${formData.userRole}`;
         }
       }
     }
@@ -96,7 +107,9 @@ const Register = () => {
       fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
-      role: formData.userRole
+      role: formData.userRole,
+      contactNo: formData.contactNo,
+      address: formData.address
     }));
     
     alert('Registration successful! Please login.');

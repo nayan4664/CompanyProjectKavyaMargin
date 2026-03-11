@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, Download, TrendingUp, AlertCircle, Search, ChevronRight } from 'lucide-react';
+import { Target, Download, TrendingUp, AlertCircle, Search, ChevronRight, IndianRupee } from 'lucide-react';
 import { 
   AreaChart, 
   Area, 
@@ -28,7 +28,7 @@ const BudgetTracking = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-            <Target className="w-8 h-8 text-primary-600" />
+            <IndianRupee className="w-8 h-8 text-primary-600" />
             Budget Tracking
           </h1>
           <p className="text-slate-500 mt-2 font-medium">Compare allocated budgets against actual expenditures across projects.</p>

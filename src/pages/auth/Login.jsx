@@ -21,7 +21,9 @@ const Login = () => {
       localStorage.setItem('currentUser', JSON.stringify({
         fullName: registeredUser.fullName,
         email: registeredUser.email,
-        role: registeredUser.role
+        role: registeredUser.role,
+        contactNo: registeredUser.contactNo,
+        address: registeredUser.address
       }));
       navigate('/dashboard');
     } else {

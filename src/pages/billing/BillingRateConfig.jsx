@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { DollarSign, Plus, Trash2, Edit2, Download, Info, Search } from 'lucide-react';
+import { IndianRupee, Plus, Trash2, Edit2, Download, Info, Search } from 'lucide-react';
 import { exportToCSV } from '../../utils/exportUtils';
 
 const BillingRateConfig = () => {
   const [rates, setRates] = useState([
-    { id: 1, role: 'Senior Architect', offshore: 45, onshore: 120, currency: 'USD', status: 'Active' },
-    { id: 2, role: 'Full Stack Developer', offshore: 30, onshore: 95, currency: 'USD', status: 'Active' },
-    { id: 3, role: 'UI/UX Lead', offshore: 35, onshore: 105, currency: 'USD', status: 'Active' },
-    { id: 4, role: 'Project Manager', offshore: 40, onshore: 110, currency: 'USD', status: 'Active' },
-    { id: 5, role: 'QA Engineer', offshore: 25, onshore: 85, currency: 'USD', status: 'Active' },
+    { id: 1, role: 'Senior Architect', offshore: 3500, onshore: 9500, currency: 'INR', status: 'Active' },
+    { id: 2, role: 'Full Stack Developer', offshore: 2200, onshore: 7500, currency: 'INR', status: 'Active' },
+    { id: 3, role: 'UI/UX Lead', offshore: 2800, onshore: 8200, currency: 'INR', status: 'Active' },
+    { id: 4, role: 'Project Manager', offshore: 3200, onshore: 8800, currency: 'INR', status: 'Active' },
+    { id: 5, role: 'QA Engineer', offshore: 1800, onshore: 6500, currency: 'INR', status: 'Active' },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,7 +20,7 @@ const BillingRateConfig = () => {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <DollarSign className="w-8 h-8 text-primary-600" />
+            <IndianRupee className="w-8 h-8 text-primary-600" />
             Billing Rate Configuration
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Standardize and manage hourly billing rates across different roles and regions.</p>
@@ -82,10 +82,10 @@ const BillingRateConfig = () => {
                     <span className="text-sm font-bold text-slate-200">{rate.role}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-black text-primary-400">${rate.offshore}</span>
+                    <span className="text-sm font-black text-primary-400">₹{rate.offshore}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-black text-indigo-400">${rate.onshore}</span>
+                    <span className="text-sm font-black text-indigo-400">₹{rate.onshore}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-md">{rate.currency}</span>

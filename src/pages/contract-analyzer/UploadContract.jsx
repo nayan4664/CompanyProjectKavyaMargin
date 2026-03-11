@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
-import { FileText, Upload, CheckCircle2, AlertCircle, Clock, Search, FileCode } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, FileText, CheckCircle2, AlertCircle, X, ArrowRight, ShieldCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const UploadContract = () => {
-  const [dragActive, setDragActive] = useState(false);
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+    
+    // Redirect if unauthorized
+    if (user?.role === 'Project Manager' || user?.role === 'Team Lead' || user?.role === 'HR' || user?.role === 'Viewers') {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
   const [uploadedFiles, setUploadedFiles] = useState([
     { name: 'Service_Agreement_TechCorp.pdf', size: '2.4 MB', status: 'Analyzed', date: '2026-03-01' },
     { name: 'SLA_Cloud_Migration.docx', size: '1.1 MB', status: 'Processing', date: '2026-03-05' },

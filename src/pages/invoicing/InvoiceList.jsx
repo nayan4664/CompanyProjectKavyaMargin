@@ -249,16 +249,20 @@ const InvoiceList = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const invoicesPerPage = 5;
 
-  // Load invoices
+  // Load user and invoices
   useEffect(() => {
 
     try {
 
       setLoading(true);
+
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (user) setCurrentUser(user);
 
       const stored = JSON.parse(localStorage.getItem("invoices"));
 
@@ -374,12 +378,14 @@ const InvoiceList = () => {
             Export CSV
           </button>
 
-          <Link
-            to="/invoicing/generate"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700"
-          >
-            Create Invoice
-          </Link>
+          {currentUser?.role !== 'Viewers' && (
+            <Link
+              to="/invoicing/generate"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700"
+            >
+              Create Invoice
+            </Link>
+          )}
 
         </div>
 
@@ -508,12 +514,14 @@ const InvoiceList = () => {
 
                     {/* Delete */}
 
-                    <button
-                      onClick={() => deleteInvoice(inv.id)}
-                      className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {currentUser?.role !== 'Viewers' && (
+                      <button
+                        onClick={() => deleteInvoice(inv.id)}
+                        className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
 
                     <button className="p-2 text-slate-400 hover:bg-slate-800 rounded-lg">
                       <MoreVertical className="w-4 h-4" />

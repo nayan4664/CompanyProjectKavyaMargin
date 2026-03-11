@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TrendingUp, Download, Filter, FileSpreadsheet } from "lucide-react";
+import { TrendingUp, Download, Filter, FileSpreadsheet, IndianRupee, PieChart, BarChart3, Target } from "lucide-react";
 
 import {
   ResponsiveContainer,
@@ -11,6 +11,10 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
+  AreaChart,
+  Area,
+  BarChart,
+  Cell
 } from "recharts";
 
 import { exportToPDF, exportToCSV } from "../../utils/exportUtils";
@@ -18,16 +22,16 @@ import { exportToPDF, exportToCSV } from "../../utils/exportUtils";
 /* Revenue Data */
 
 const revenueData = [
-  { month: "Jan", year: 2025, confirmed: 320000, weighted: 350000, target: 360000 },
-  { month: "Feb", year: 2025, confirmed: 300000, weighted: 340000, target: 350000 },
-  { month: "Mar", year: 2025, confirmed: 420000, weighted: 470000, target: 450000 },
-  { month: "Apr", year: 2025, confirmed: 390000, weighted: 430000, target: 420000 },
-  { month: "May", year: 2025, confirmed: 410000, weighted: 460000, target: 450000 },
-  { month: "Jun", year: 2025, confirmed: 450000, weighted: 500000, target: 470000 },
+  { month: "Jan", year: 2025, confirmed: 3200000, weighted: 3500000, target: 3600000 },
+  { month: "Feb", year: 2025, confirmed: 3000000, weighted: 3400000, target: 3500000 },
+  { month: "Mar", year: 2025, confirmed: 4200000, weighted: 4700000, target: 4500000 },
+  { month: "Apr", year: 2025, confirmed: 3900000, weighted: 4300000, target: 4200000 },
+  { month: "May", year: 2025, confirmed: 4100000, weighted: 4600000, target: 4500000 },
+  { month: "Jun", year: 2025, confirmed: 4500000, weighted: 5000000, target: 4700000 },
 
-  { month: "Jul", year: 2024, confirmed: 350000, weighted: 390000, target: 380000 },
-  { month: "Aug", year: 2024, confirmed: 370000, weighted: 410000, target: 400000 },
-  { month: "Sep", year: 2024, confirmed: 360000, weighted: 420000, target: 410000 },
+  { month: "Jul", year: 2024, confirmed: 3500000, weighted: 3900000, target: 3800000 },
+  { month: "Aug", year: 2024, confirmed: 3700000, weighted: 4100000, target: 4000000 },
+  { month: "Sep", year: 2024, confirmed: 3600000, weighted: 4200000, target: 4100000 },
 ];
 
 const RevenueDashboard = () => {
@@ -79,16 +83,20 @@ const RevenueDashboard = () => {
 
     <div
       id="revenue-dashboard-content"
-      className="space-y-8 p-6 bg-slate-950 min-h-screen text-white"
+      className="space-y-8 p-6 bg-slate-950 min-h-screen text-white animate-in fade-in duration-500"
     >
 
       {/* HEADER */}
 
-      <header className="flex justify-between items-center">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-        <h1 className="text-3xl flex gap-2">
-          <TrendingUp /> Revenue Forecast
-        </h1>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
+            <IndianRupee className="w-8 h-8 text-blue-500" />
+            Revenue Forecast Dashboard
+          </h1>
+          <p className="text-slate-400 mt-2 font-medium">Predictive analysis of future revenue streams and margin expectations.</p>
+        </div>
 
         <div className="flex gap-3">
 
