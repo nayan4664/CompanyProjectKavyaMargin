@@ -6,9 +6,16 @@ const getCompany = async (req, res) => {
   try {
     let company = await Company.findOne();
     if (!company) {
-      // Create default if none exists
-      company = await Company.create({
-        companyName: 'KavyaMargin Enterprises',
+      // Return default empty structure instead of creating dummy data in DB
+      return res.status(200).json({
+        companyName: '',
+        registrationNumber: '',
+        taxId: '',
+        industry: '',
+        website: '',
+        email: '',
+        phone: '',
+        address: '',
         currency: 'INR',
         fiscalYearStart: 'April'
       });

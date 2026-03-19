@@ -94,7 +94,7 @@ const AppRoutes = () => {
     <Router>
       <Routes>
         {/* Auth Routes */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/register" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

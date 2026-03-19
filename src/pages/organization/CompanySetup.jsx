@@ -5,14 +5,14 @@ import { companyAPI } from '../../services/api';
 
 const CompanySetup = () => {
   const [formData, setFormData] = useState({
-    companyName: 'KavyaMargin Enterprises',
-    registrationNumber: 'REG-123456789',
-    taxId: 'TAX-987654321',
-    industry: 'Information Technology',
-    website: 'https://kavyamargin.com',
-    email: 'contact@kavyamargin.com',
-    phone: '+91 98765 43210',
-    address: '123 Tech Park, Financial District, Nagpur, India',
+    companyName: '',
+    registrationNumber: '',
+    taxId: '',
+    industry: '',
+    website: '',
+    email: '',
+    phone: '',
+    address: '',
     currency: 'INR',
     fiscalYearStart: 'April',
   });
@@ -93,6 +93,7 @@ const CompanySetup = () => {
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleInputChange}
+                  placeholder="Enter Company name"
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
                 />
               </div>
@@ -106,6 +107,7 @@ const CompanySetup = () => {
                   name="registrationNumber"
                   value={formData.registrationNumber}
                   onChange={handleInputChange}
+                  placeholder="Enter Registration No"
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
                 />
               </div>
@@ -119,6 +121,7 @@ const CompanySetup = () => {
                   name="website"
                   value={formData.website}
                   onChange={handleInputChange}
+                  placeholder="Enter Website"
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
                 />
               </div>
@@ -132,6 +135,7 @@ const CompanySetup = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  placeholder="Enter Work Email"
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
                 />
               </div>
@@ -146,6 +150,7 @@ const CompanySetup = () => {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
+                placeholder="Enter Office Address"
                 rows="3"
                 className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all resize-none"
               ></textarea>

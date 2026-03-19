@@ -3,7 +3,15 @@ const jwt = require('jsonwebtoken');
 
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '30d' });
+};
+
+const HARDCODED_USERS = {
+  'nayan@kavyainfoweb.com': { password: 'Nayan@4664', role: 'Super Admin', fullName: 'Nayan' },
+  'sushil@kavyainfoweb.com': { password: 'Sushil@4664', role: 'Company Admin', fullName: 'Sushil' },
+  'rajni@kavyainfoweb.com': { password: 'Rajni@4664', role: 'Project Manager', fullName: 'Rajni' },
+  'raj@kavyainfoweb.com': { password: 'Raj@4664', role: 'HR', fullName: 'Raj' },
+  'priti@kavyainfoweb.com': { password: 'Priti@4664', role: 'Team Lead', fullName: 'Priti' }
 };
 
 // @desc    Register new user
@@ -37,10 +45,35 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const hardcodedUser = HARDCODED_USERS[normalizedEmail];
+
+    // If it's one of the specific role emails, verify password
+    if (hardcodedUser) {
+      if (password === hardcodedUser.password) {
+        return res.json({
+          _id: 'hardcoded_' + normalizedEmail,
+          fullName: hardcodedUser.fullName,
+          email: normalizedEmail,
+          role: hardcodedUser.role,
+          companyName: 'KavyaMargin',
+          token: generateToken('hardcoded_' + normalizedEmail)
+        });
+      } else {
+        return res.status(401).json({ message: 'Invalid password for this role account' });
+      }
+    }
+
+    // For any other email, check the database
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (user && (await user.comparePassword(password))) {
-      res.json({
+      return res.json({
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
@@ -49,8 +82,9 @@ const loginUser = async (req, res) => {
         token: generateToken(user._id)
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
