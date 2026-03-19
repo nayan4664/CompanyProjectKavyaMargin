@@ -98,10 +98,13 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
         role: formData.userRole,
-        companyName: 'KavyaMargin' // Default for now
+        contactNo: formData.contactNo,
+        address: formData.address,
+        companyName: 'KavyaMargin'
       });
       console.log('Register response:', response.data);
       
+      localStorage.setItem('registrationComplete', 'true');
       alert('Registration successful! Please login.');
       navigate('/login');
     } catch (err) {

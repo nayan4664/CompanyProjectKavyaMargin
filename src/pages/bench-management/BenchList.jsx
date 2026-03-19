@@ -290,7 +290,7 @@ const BenchList = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
+                    {currentUser?.role !== 'Viewers' && (
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {editingId === (res._id || res.id) ? (
                           <>

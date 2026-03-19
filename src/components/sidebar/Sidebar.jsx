@@ -173,16 +173,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     
     if (role === 'Viewers') {
       return menuItems
-        .filter(item => item.label === 'Margin Tracker' || item.label === 'Invoicing')
-        .map(item => {
-          if (item.label === 'Invoicing') {
-            return {
-              ...item,
-              children: item.children?.filter(child => child.label !== 'Generate Invoice')
-            };
-          }
-          return item;
-        });
+        .filter(item => item.label === 'Margin Tracker' || item.label === 'Invoicing');
     }
     if (role === 'Team Lead') {
       const restrictedModules = ['Organization', 'Contract Analyzer', 'Invoicing'];

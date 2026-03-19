@@ -24,7 +24,7 @@ const EmployeeCostList = () => {
     } catch (error) {
       console.error('Failed to fetch employees:', error);
       // Fallback to localStorage or default if API fails
-      const storedEmployees = JSON.parse(localStorage.getItem('employees'));
+      const storedEmployees = JSON.parse(localStorage.getItem('mock_employees'));
       if (storedEmployees) setEmployees(storedEmployees);
     } finally {
       setLoading(false);
@@ -37,8 +37,8 @@ const EmployeeCostList = () => {
         await employeeAPI.delete(id);
         setEmployees(employees.filter(emp => emp._id !== id && emp.id !== id));
         // Also update localStorage for consistency
-        const stored = JSON.parse(localStorage.getItem('employees')) || [];
-        localStorage.setItem('employees', JSON.stringify(stored.filter(e => e.id !== id)));
+        const stored = JSON.parse(localStorage.getItem('mock_employees')) || [];
+        localStorage.setItem('mock_employees', JSON.stringify(stored.filter(e => e.id !== id)));
       } catch (error) {
         console.error('Failed to delete employee:', error);
         alert('Failed to delete employee');
@@ -84,7 +84,7 @@ const EmployeeCostList = () => {
             <Download className="w-4 h-4" />
             Export XML
           </button>
-          {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
+          {currentUser?.role !== 'Viewers' && (
             <Link 
               to="/employee-cost/add"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
@@ -161,7 +161,7 @@ const EmployeeCostList = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
+                    {currentUser?.role !== 'Viewers' && (
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Link 
                           to={`/employee-cost/edit/${emp._id || emp.id}`}

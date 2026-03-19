@@ -27,7 +27,7 @@ const AddEmployeeCost = () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
     
-    if (user?.role === 'Project Manager' || user?.role === 'Team Lead') {
+    if (user?.role === 'Viewers') {
       navigate('/dashboard');
     }
 
@@ -60,7 +60,7 @@ const AddEmployeeCost = () => {
     } catch (error) {
       console.error('Failed to fetch employee from API:', error);
       // Fallback to localStorage
-      const existingEmployees = JSON.parse(localStorage.getItem('employees')) || [];
+      const existingEmployees = JSON.parse(localStorage.getItem('mock_employees')) || [];
       const employeeToEdit = existingEmployees.find(emp => emp.id === employeeId || emp._id === employeeId);
       if (employeeToEdit) {
         const [firstName, ...lastNameParts] = employeeToEdit.name.split(' ');
@@ -117,11 +117,11 @@ const AddEmployeeCost = () => {
       }
       
       // Update localStorage for redundancy
-      const existing = JSON.parse(localStorage.getItem('employees')) || [];
+      const existing = JSON.parse(localStorage.getItem('mock_employees')) || [];
       const updated = isEditMode 
         ? existing.map(emp => (emp._id === id || emp.id === id) ? { ...emp, ...employeeData } : emp)
-        : [{ ...employeeData, id: Date.now() }, ...existing];
-      localStorage.setItem('employees', JSON.stringify(updated));
+        : [{ ...employeeData, id: Date.now().toString() }, ...existing];
+      localStorage.setItem('mock_employees', JSON.stringify(updated));
 
       alert(isEditMode ? 'Employee cost data updated successfully!' : 'Employee cost data added successfully!');
       navigate('/employee-cost/list');

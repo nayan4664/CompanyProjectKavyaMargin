@@ -6,7 +6,8 @@ import {
   Target, 
   Zap, 
   Calendar,
-  Info
+  Info,
+  BrainCircuit
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -186,8 +187,5 @@ const MarginPrediction = () => {
     </div>
   );
 };
-
-// Internal icon import since BrainCircuit was used in header but not imported from lucide
-import { BrainCircuit } from 'lucide-react';
 
 export default MarginPrediction;
