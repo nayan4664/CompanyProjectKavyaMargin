@@ -1,27 +1,31 @@
-# React + Vite
+# KavyaMargin - Enterprise Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a **frontend-only** implementation of the KavyaMargin enterprise dashboard. All backend dependencies and MongoDB connections have been removed. Data is managed locally via `localStorage`.
 
-Currently, two official plugins are available:
+## Features
+- **Frontend-only architecture**: No backend server or database required.
+- **Mock API Services**: Simulated API calls with `localStorage` persistence.
+- **Role-based Access**: Hardcoded credentials for different organizational roles.
+- **Dark Theme**: Permanent professional dark enterprise aesthetic.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Authorized Login Credentials
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | `nayan@kavyainfoweb.com` | `Nayan@4664` |
+| Company Admin | `sushil@kavyainfoweb.com` | `Sushil@4664` |
+| Project Manager | `rajni@kavyainfoweb.com` | `Rajni@4664` |
+| HR | `raj@kavyainfoweb.com` | `Raj@4664` |
+| Team Lead | `priti@kavyainfoweb.com` | `Priti@4664` |
+| Viewers | *Any other email* | *Any password* |
+
+## Getting Started
+1.  Install dependencies: `npm install`
+2.  Run the application: `npm run dev`
+3.  The app will be available at `http://localhost:5173/`
 
 ## Troubleshooting
-
-### MongoDB Database Case-Sensitivity Error
-If you or your teammates encounter the error: 
-`db already exists with different case already have: [kavyaMargin] trying to create [kavyamargin]`
-
-This happens because MongoDB database names are **case-sensitive** on certain operating systems (like Windows). If a database named `kavyaMargin` (with a capital M) already exists on the local machine, MongoDB will not allow the creation of `kavyamargin` (all lowercase).
-
-**How to Resolve:**
-1.  Open your local `.env` file in the `server/` folder.
-2.  Update the `MONGO_URI` to match the case of the existing database. Change:
-    `MONGO_URI=mongodb://127.0.0.1:27017/kavyamargin`
-    to
-    `MONGO_URI=mongodb://127.0.0.1:27017/kavyaMargin`
-3.  Alternatively, you can delete the `kavyaMargin` database using MongoDB Compass or the Mongo shell if you don't need the old data, and then the lowercase version will work.
+### Data Persistence
+Since the app uses `localStorage`, clearing your browser cache or site data will reset the mock data (employees, company info, etc.) to their initial states.
 
 ## React Compiler
 
