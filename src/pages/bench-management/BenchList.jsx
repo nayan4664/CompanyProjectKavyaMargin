@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Search, Download, Filter, Clock, AlertTriangle, ExternalLink, MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react';
 import { exportToCSV, exportToXML } from '../../utils/exportUtils';
+import { benchAPI } from '../../services/api';
 
 const defaultBenchData = [
   { id: 1, name: 'Rahul Reddy', role: 'Product Manager', dept: 'Product', benchTime: '45 Days', cost: '₹2.0L/mo', status: 'Available' },
@@ -15,22 +16,43 @@ const BenchList = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
-
-    const storedBench = JSON.parse(localStorage.getItem('benchList'));
-    if (storedBench) {
-      setBenchList(storedBench);
-    } else {
-      setBenchList(defaultBenchData);
-      localStorage.setItem('benchList', JSON.stringify(defaultBenchData));
-    }
+    fetchBenchData();
   }, []);
 
+  const fetchBenchData = async () => {
+    try {
+      setLoading(true);
+      const response = await benchAPI.getAll();
+      if (response.data.length > 0) {
+        setBenchList(response.data);
+      } else {
+        // If DB is empty, use defaults and save to DB
+        setBenchList(defaultBenchData);
+        // Optional: Seed DB with defaults if empty
+        for (const item of defaultBenchData) {
+          const { id, ...data } = item;
+          await benchAPI.create(data);
+        }
+        // Refetch after seeding
+        const refetch = await benchAPI.getAll();
+        setBenchList(refetch.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch bench data:', error);
+      const storedBench = JSON.parse(localStorage.getItem('benchList'));
+      setBenchList(storedBench || defaultBenchData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditClick = (res) => {
-    setEditingId(res.id);
+    setEditingId(res._id || res.id);
     setEditFormData({ ...res });
   };
 
@@ -44,19 +66,32 @@ const BenchList = () => {
     setEditFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveEdit = () => {
-    const updatedList = benchList.map(res => res.id === editingId ? editFormData : res);
-    setBenchList(updatedList);
-    localStorage.setItem('benchList', JSON.stringify(updatedList));
-    setEditingId(null);
-    setEditFormData({});
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this resource from the bench?')) {
-      const updatedList = benchList.filter(res => res.id !== id);
+  const handleSaveEdit = async () => {
+    try {
+      const id = editingId;
+      await benchAPI.update(id, editFormData);
+      const updatedList = benchList.map(res => (res._id === id || res.id === id) ? editFormData : res);
       setBenchList(updatedList);
       localStorage.setItem('benchList', JSON.stringify(updatedList));
+      setEditingId(null);
+      setEditFormData({});
+    } catch (error) {
+      console.error('Failed to update bench resource:', error);
+      alert('Failed to update resource');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this resource from the bench?')) {
+      try {
+        await benchAPI.delete(id);
+        const updatedList = benchList.filter(res => res._id !== id && res.id !== id);
+        setBenchList(updatedList);
+        localStorage.setItem('benchList', JSON.stringify(updatedList));
+      } catch (error) {
+        console.error('Failed to delete bench resource:', error);
+        alert('Failed to delete resource');
+      }
     }
   };
 
@@ -157,9 +192,9 @@ const BenchList = () => {
             </thead>
             <tbody className="divide-y divide-slate-800">
               {filteredBench.map((res) => (
-                <tr key={res.id} className="hover:bg-slate-800/50 transition-colors group">
+                <tr key={res._id || res.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="px-6 py-4">
-                    {editingId === res.id ? (
+                    {editingId === (res._id || res.id) ? (
                       <div className="space-y-2">
                         <input 
                           type="text" 
@@ -184,7 +219,7 @@ const BenchList = () => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    {editingId === res.id ? (
+                    {editingId === (res._id || res.id) ? (
                       <select 
                         name="dept"
                         value={editFormData.dept}
@@ -202,7 +237,7 @@ const BenchList = () => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    {editingId === res.id ? (
+                    {editingId === (res._id || res.id) ? (
                       <input 
                         type="text" 
                         name="benchTime"
@@ -220,7 +255,7 @@ const BenchList = () => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    {editingId === res.id ? (
+                    {editingId === (res._id || res.id) ? (
                       <input 
                         type="text" 
                         name="cost"
@@ -233,7 +268,7 @@ const BenchList = () => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    {editingId === res.id ? (
+                    {editingId === (res._id || res.id) ? (
                       <select 
                         name="status"
                         value={editFormData.status}
@@ -257,7 +292,7 @@ const BenchList = () => {
                   <td className="px-6 py-4 text-right">
                     {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {editingId === res.id ? (
+                        {editingId === (res._id || res.id) ? (
                           <>
                             <button 
                               onClick={handleSaveEdit}
@@ -284,7 +319,7 @@ const BenchList = () => {
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button 
-                              onClick={() => handleDelete(res.id)}
+                              onClick={() => handleDelete(res._id || res.id)}
                               className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all" 
                               title="Delete"
                             >

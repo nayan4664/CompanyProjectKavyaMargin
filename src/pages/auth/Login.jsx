@@ -1,33 +1,37 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TrendingUp, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { authAPI } from '../../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Simple validation against registered user in localStorage
-    const registeredUser = JSON.parse(localStorage.getItem('registeredUser'));
-    
-    if (registeredUser && formData.email === registeredUser.email && formData.password === registeredUser.password) {
-      localStorage.setItem('currentUser', JSON.stringify({
-        fullName: registeredUser.fullName,
-        email: registeredUser.email,
-        role: registeredUser.role,
-        contactNo: registeredUser.contactNo,
-        address: registeredUser.address
-      }));
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await authAPI.login(formData);
+      console.log('Login response:', response.data);
+      const { token, ...userData } = response.data;
+      
+      // Store token and user data
+      localStorage.setItem('token', token);
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      
       navigate('/dashboard');
-    } else {
-      setError('Invalid credentials. Please register first or check your details.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid credentials. Please check your details.');
+    } finally {
+      setLoading(false);
     }
   };
 

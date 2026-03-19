@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { exportToCSV, exportToXML } from '../../utils/exportUtils';
 import { Link } from 'react-router-dom';
+import { invoiceAPI } from '../../services/api';
 
 const StatCard = ({ title, value, color, icon }) => {
   return (
@@ -47,43 +48,72 @@ const InvoiceList = () => {
 
   // Load user and invoices
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    if (user) setCurrentUser(user);
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (user) setCurrentUser(user);
-
-      const stored = JSON.parse(localStorage.getItem("invoices"));
-      if (stored && stored.length > 0) {
-        setInvoices(stored);
+      const response = await invoiceAPI.getAll();
+      if (response.data.length > 0) {
+        setInvoices(response.data);
       } else {
-        // default demo invoices
+        // default demo invoices if DB is empty
         const demo = [
-          { id: 'INV-2026-001', client: 'TechCorp', project: 'Project Alpha', amount: '₹4,50,000', date: '2026-03-01', dueDate: '2026-03-15', status: 'Paid' },
-          { id: 'INV-2026-002', client: 'GlobalSoft', project: 'Project Beta', amount: '₹2,10,000', date: '2026-03-02', dueDate: '2026-03-16', status: 'Pending' },
-          { id: 'INV-2026-003', client: 'SkyHigh', project: 'Cloud Migration', amount: '₹8,40,000', date: '2026-03-05', dueDate: '2026-03-20', status: 'Overdue' },
-          { id: 'INV-2026-004', client: 'FitTrack', project: 'Mobile App', amount: '₹3,20,000', date: '2026-03-07', dueDate: '2026-03-21', status: 'Pending' },
+          { _id: '1', invoiceId: 'INV-2026-001', client: 'TechCorp', project: 'Project Alpha', amount: 450000, date: '2026-03-01', dueDate: '2026-03-15', status: 'Paid' },
+          { _id: '2', invoiceId: 'INV-2026-002', client: 'GlobalSoft', project: 'Project Beta', amount: 210000, date: '2026-03-02', dueDate: '2026-03-16', status: 'Pending' },
+          { _id: '3', invoiceId: 'INV-2026-003', client: 'SkyHigh', project: 'Cloud Migration', amount: 840000, date: '2026-03-05', dueDate: '2026-03-20', status: 'Overdue' },
+          { _id: '4', invoiceId: 'INV-2026-004', client: 'FitTrack', project: 'Mobile App', amount: 320000, date: '2026-03-07', dueDate: '2026-03-21', status: 'Pending' },
         ];
         setInvoices(demo);
+        // Seed demo data to DB
+        for (const inv of demo) {
+          const { _id, ...data } = inv;
+          await invoiceAPI.create(data);
+        }
+        // Refetch to get real IDs
+        const refetch = await invoiceAPI.getAll();
+        setInvoices(refetch.data);
       }
     } catch (err) {
+      console.error('Failed to fetch invoices:', err);
       setError("Failed to load invoices");
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // Delete invoice
-  const deleteInvoice = (id) => {
+  const deleteInvoice = async (id) => {
     if (!window.confirm("Delete this invoice?")) return;
-    const updated = invoices.filter(inv => inv.id !== id);
-    setInvoices(updated);
-    localStorage.setItem("invoices", JSON.stringify(updated));
+    try {
+      await invoiceAPI.delete(id);
+      setInvoices(invoices.filter(inv => (inv._id || inv.id) !== id));
+    } catch (err) {
+      console.error('Failed to delete invoice:', err);
+      alert('Failed to delete invoice');
+    }
+  };
+
+  const formatCurrency = (val) => 
+    new Intl.NumberFormat('en-IN', { 
+      style: 'currency', 
+      currency: 'INR', 
+      maximumFractionDigits: 0 
+    }).format(val);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toISOString().split('T')[0];
   };
 
   // Filtering
   const filteredInvoices = invoices.filter(inv => {
+    const invId = inv.invoiceId || inv.id || '';
     const matchSearch =
-      inv.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.project.toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatus =
@@ -200,9 +230,9 @@ const InvoiceList = () => {
             </thead>
             <tbody className="divide-y divide-slate-800">
               {currentInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-slate-800/50 transition-colors group">
+                <tr key={inv._id || inv.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <span className="text-sm font-bold text-slate-200">{inv.id}</span>
+                    <span className="text-sm font-bold text-slate-200">{inv.invoiceId || inv.id}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
@@ -211,13 +241,13 @@ const InvoiceList = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-black text-white">{inv.amount}</span>
+                    <span className="text-sm font-black text-white">{formatCurrency(inv.amount)}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-xs text-slate-400 font-medium">{inv.date}</span>
+                    <span className="text-xs text-slate-400 font-medium">{formatDate(inv.date)}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-xs text-slate-400 font-medium">{inv.dueDate}</span>
+                    <span className="text-xs text-slate-400 font-medium">{formatDate(inv.dueDate)}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${
@@ -237,7 +267,7 @@ const InvoiceList = () => {
                       </button>
                       {currentUser?.role !== 'Viewers' && (
                         <button
-                          onClick={() => deleteInvoice(inv.id)}
+                          onClick={() => deleteInvoice(inv._id || inv.id)}
                           className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"
                           title="Delete"
                         >

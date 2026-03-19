@@ -1,22 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, UserCircle, Menu, LogOut, Settings, User, X, Mail, Phone, MapPin, Shield } from 'lucide-react';
+import { Bell, UserCircle, Menu, LogOut, Settings, User, X, Mail, Phone, MapPin, Shield, Sun, Moon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 
 const Navbar = ({ onMenuClick }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch (e) {
+        console.error('Error parsing user in Navbar initial state:', e);
+        return null;
+      }
+    }
+    return null;
+  });
   const userRef = useRef(null);
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
 
   useEffect(() => {
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (user) {
-      setCurrentUser(user);
-    }
+    const handleStorageChange = () => {
+      const userStr = localStorage.getItem('currentUser');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setCurrentUser(user);
+        } catch (e) {
+          console.error('Error parsing user in Navbar storage change:', e);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Close dropdowns on click outside
@@ -46,28 +68,28 @@ const Navbar = ({ onMenuClick }) => {
   };
 
   return (
-    <header className="h-16 bg-slate-950 border-b border-slate-800 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors">
+    <header className="h-16 border-b px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors bg-slate-950 border-slate-800">
       <div className="flex items-center gap-2 md:gap-4 flex-1">
         <button 
           onClick={onMenuClick}
-          className="p-2 hover:bg-slate-800 rounded-lg lg:hidden transition-colors"
+          className="p-2 rounded-lg lg:hidden transition-colors hover:bg-slate-800"
         >
           <Menu className="w-5 h-5 text-slate-400" />
         </button>
       </div>
 
       <div className="flex items-center gap-1 md:gap-3">
-        <div className="h-8 w-[1px] bg-slate-800 mx-1 md:mx-2" />
-        
         {/* User Dropdown */}
         <div className="relative" ref={userRef}>
           <button 
             onClick={() => setShowUserDropdown(!showUserDropdown)}
-            className={`flex items-center gap-2 md:gap-3 pl-2 pr-1 py-1 hover:bg-slate-800 rounded-full transition-colors group ${showUserDropdown ? 'bg-slate-800' : ''}`}
+            className={`flex items-center gap-2 md:gap-3 pl-2 pr-1 py-1 rounded-full transition-colors group ${
+              showUserDropdown ? 'bg-slate-800' : 'hover:bg-slate-800'
+            }`}
           >
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-slate-100 leading-none">{currentUser?.fullName || 'Guest User'}</p>
-              <p className="text-[10px] text-slate-500 mt-1 font-black uppercase tracking-widest">{currentUser?.role || 'User'}</p>
+              <p className="text-xs font-bold leading-none text-slate-100">{currentUser?.fullName || 'Guest User'}</p>
+              <p className="text-[10px] mt-1 font-black uppercase tracking-widest text-slate-500">{currentUser?.role || 'User'}</p>
             </div>
             <div className="w-8 h-8 md:w-9 md:h-9 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center font-black text-xs md:text-sm border-2 border-blue-500/20 group-hover:border-blue-500/50 transition-all">
               {getInitials(currentUser?.fullName)}
@@ -75,10 +97,10 @@ const Navbar = ({ onMenuClick }) => {
           </button>
 
           {showUserDropdown && (
-            <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-black/50 p-2 animate-in fade-in zoom-in-95 duration-200">
-              <div className="p-3 mb-2 bg-slate-800/50 rounded-xl">
+            <div className="absolute right-0 mt-2 w-56 border rounded-2xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 bg-slate-900 border-slate-800 shadow-black/50">
+              <div className="p-3 mb-2 rounded-xl bg-slate-800/50">
                 <p className="text-xs font-bold text-slate-100">{currentUser?.fullName || 'Guest User'}</p>
-                <p className="text-[10px] text-slate-500 mt-0.5">{currentUser?.email || 'guest@kavyamargin.com'}</p>
+                <p className="text-[10px] mt-0.5 text-slate-500">{currentUser?.email || 'guest@kavyamargin.com'}</p>
               </div>
               <div className="space-y-1">
                 <button 
@@ -86,12 +108,12 @@ const Navbar = ({ onMenuClick }) => {
                     setShowProfileModal(true);
                     setShowUserDropdown(false);
                   }} 
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition-colors group font-bold text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors group font-bold text-left text-slate-400 hover:bg-slate-800 hover:text-blue-400"
                 >
-                  <User className="w-4 h-4 text-slate-500 group-hover:text-blue-500" />
+                  <User className="w-4 h-4 group-hover:text-blue-500 text-slate-500" />
                   My Profile
                 </button>
-                <div className="h-[1px] bg-slate-800 my-1 mx-2" />
+                <div className="h-[1px] my-1 mx-2 bg-slate-800" />
                 <button 
                   onClick={handleSignOut}
                   className="flex items-center gap-3 px-3 py-2 text-sm text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors w-full group font-bold"

@@ -210,7 +210,7 @@ const MarginTrends = () => {
             <Area
               dataKey="gross"
               name="Gross Margin"
-              stroke="#0ea5e9"
+              stroke="rgb(14, 165, 233)"
               fill="#0ea5e9"
             />
 

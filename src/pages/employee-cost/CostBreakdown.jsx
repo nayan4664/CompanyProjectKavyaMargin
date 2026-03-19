@@ -42,7 +42,7 @@ const CostBreakdown = () => {
     <div className="space-y-8 animate-in fade-in duration-500" id="cost-breakdown-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3      ">
             <PieChartIcon className="w-8 h-8 text-primary-600" />
             Cost Breakdown
           </h1>

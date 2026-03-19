@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   Lightbulb, 
@@ -22,17 +22,39 @@ import {
   Line
 } from 'recharts';
 import { exportToCSV } from '../../utils/exportUtils';
-
-const forecastData = [
-  { month: 'Jul', revenue: 450000, cost: 320000, target: 480000 },
-  { month: 'Aug', revenue: 480000, cost: 335000, target: 490000 },
-  { month: 'Sep', revenue: 520000, cost: 350000, target: 510000 },
-  { month: 'Oct', revenue: 580000, cost: 380000, target: 550000 },
-  { month: 'Nov', revenue: 610000, cost: 400000, target: 600000 },
-  { month: 'Dec', revenue: 650000, cost: 420000, target: 630000 },
-];
+import { forecastAPI } from '../../services/api';
 
 const ForecastInsights = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjections();
+  }, []);
+
+  const fetchProjections = async () => {
+    try {
+      setLoading(true);
+      const response = await forecastAPI.getProjections();
+      setData(response.data);
+    } catch (error) {
+      console.error('Failed to fetch projections:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (val) => 
+    new Intl.NumberFormat('en-IN', { 
+      style: 'currency', 
+      currency: 'INR', 
+      maximumFractionDigits: 1 
+    }).format(val / 1000000) + 'M';
+
+  if (loading || !data) return <div className="flex items-center justify-center h-screen text-slate-400">Analyzing data with AI...</div>;
+
+  const { projections, summary, recommendations } = data;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="forecast-insights-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -45,7 +67,7 @@ const ForecastInsights = () => {
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => exportToCSV(forecastData, 'Forecast_Insights.csv')}
+            onClick={() => exportToCSV(projections, 'Forecast_Insights.csv')}
             className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
           >
             Export CSV
@@ -61,28 +83,28 @@ const ForecastInsights = () => {
         <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Est. Revenue H2</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <h3 className="text-2xl font-black text-slate-100">₹3.24M</h3>
+            <h3 className="text-2xl font-black text-slate-100">{formatCurrency(summary.totalEstRevenue)}</h3>
             <span className="text-emerald-400 font-bold text-xs">+14%</span>
           </div>
         </div>
         <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Est. Cost H2</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <h3 className="text-2xl font-black text-slate-100">₹2.21M</h3>
+            <h3 className="text-2xl font-black text-slate-100">{formatCurrency(summary.totalEstCost)}</h3>
             <span className="text-rose-400 font-bold text-xs">+8%</span>
           </div>
         </div>
         <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Projected Margin</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <h3 className="text-2xl font-black text-slate-100">31.8%</h3>
+            <h3 className="text-2xl font-black text-slate-100">{summary.projectedMargin}%</h3>
             <span className="text-emerald-400 font-bold text-xs">Target Met</span>
           </div>
         </div>
         <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Forecast Accuracy</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <h3 className="text-2xl font-black text-slate-100">94.2%</h3>
+            <h3 className="text-2xl font-black text-slate-100">{summary.forecastAccuracy}%</h3>
           </div>
         </div>
       </div>
@@ -98,7 +120,7 @@ const ForecastInsights = () => {
           </div>
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={forecastData}>
+              <ComposedChart data={projections}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
                 <XAxis 
                   dataKey="month" 
@@ -139,30 +161,11 @@ const ForecastInsights = () => {
             <h3 className="text-lg font-bold text-slate-100">AI Recommendations</h3>
           </div>
           <div className="space-y-4">
-            {[
-              { 
-                title: 'Revenue Acceleration', 
-                desc: 'Increase offshore billing mix by 5% in Q4 to exceed revenue targets by ₹240k.',
-                impact: 'High Impact',
-                icon: TrendingUp
-              },
-              { 
-                title: 'Cost Optimization', 
-                desc: 'Consolidate training programs for bench resources to reduce indirect costs by 12%.',
-                impact: 'Medium Impact',
-                icon: Layers
-              },
-              { 
-                title: 'Contract Upsell', 
-                desc: 'Project Gamma SLA performance indicates a 85% probability of successful contract expansion.',
-                impact: 'Growth Opp',
-                icon: Target
-              }
-            ].map((rec, i) => (
+            {recommendations.map((rec, i) => (
               <div key={i} className="p-5 border border-slate-800 rounded-2xl bg-slate-800/50 hover:bg-slate-800 transition-all cursor-pointer group">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 bg-slate-900 rounded-lg shadow-sm border border-slate-800">
-                    <rec.icon className="w-4 h-4 text-blue-400" />
+                    <TrendingUp className="w-4 h-4 text-blue-400" />
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{rec.impact}</span>
                 </div>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TrendingUp, Mail, Lock, User, Phone, MapPin, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { authAPI } from '../../services/api';
 
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     contactNo: '',
@@ -35,35 +37,30 @@ const Register = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'contactNo') {
-      // Only numbers and max 10 digits
       const cleanedValue = value.replace(/\D/g, '').slice(0, 10);
       setFormData({ ...formData, [name]: cleanedValue });
     } else {
       setFormData({ ...formData, [name]: value });
     }
-    // Clear error for the field being edited
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
-    // Basic required validation
     Object.keys(formData).forEach(key => {
       if (!formData[key]) {
         newErrors[key] = 'Required';
       }
     });
 
-    // Contact No validation
     if (formData.contactNo && formData.contactNo.length !== 10) {
       newErrors.contactNo = 'Must be exactly 10 digits';
     }
 
-    // Role-Email validation
     if (formData.userRole && formData.email) {
       const restrictedEmails = [
         roleEmailMap['Super Admin'],
@@ -73,13 +70,7 @@ const Register = () => {
         roleEmailMap['Team Lead']
       ];
 
-      if (formData.userRole === 'Viewers') {
-        // Viewers can use any email EXCEPT the restricted ones
-        if (restrictedEmails.includes(formData.email)) {
-          newErrors.email = 'This administrative email cannot be used for a Viewer account';
-        }
-      } else {
-        // Other roles must use their specific authorized email
+      if (formData.userRole !== 'Viewers') {
         const expectedEmail = roleEmailMap[formData.userRole];
         if (formData.email !== expectedEmail) {
           newErrors.email = `Only ${expectedEmail} is authorized for ${formData.userRole}`;
@@ -87,12 +78,10 @@ const Register = () => {
       }
     }
 
-    // Password validation
     if (formData.password && !validatePassword(formData.password)) {
       newErrors.password = 'Must be 8+ chars, include a number and a capital letter';
     }
 
-    // Confirm password validation
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
@@ -102,18 +91,24 @@ const Register = () => {
       return;
     }
 
-    // If all valid, simulate registration success and navigate to login
-    localStorage.setItem('registeredUser', JSON.stringify({
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      role: formData.userRole,
-      contactNo: formData.contactNo,
-      address: formData.address
-    }));
-    
-    alert('Registration successful! Please login.');
-    navigate('/login');
+    try {
+      setLoading(true);
+      const response = await authAPI.register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.userRole,
+        companyName: 'KavyaMargin' // Default for now
+      });
+      console.log('Register response:', response.data);
+      
+      alert('Registration successful! Please login.');
+      navigate('/login');
+    } catch (err) {
+      setErrors({ email: err.response?.data?.message || 'Registration failed' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

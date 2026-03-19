@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Save, ArrowLeft, DollarSign, Briefcase, Building2, Calendar, IndianRupee, Users, Layout } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { employeeAPI } from '../../services/api';
 
 const AddEmployeeCost = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [currentUser, setCurrentUser] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -25,16 +27,41 @@ const AddEmployeeCost = () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
     
-    // Redirect Project Manager or Team Lead if they try to access this page
     if (user?.role === 'Project Manager' || user?.role === 'Team Lead') {
       navigate('/dashboard');
     }
 
     if (id) {
       setIsEditMode(true);
-      const existingEmployees = JSON.parse(localStorage.getItem('employees')) || [];
-      const employeeToEdit = existingEmployees.find(emp => emp.id === Number(id));
+      fetchEmployeeData(id);
+    }
+  }, [id, navigate]);
+
+  const fetchEmployeeData = async (employeeId) => {
+    try {
+      setLoading(true);
+      // Try API first
+      const response = await employeeAPI.getById(employeeId);
+      const employee = response.data;
       
+      const [firstName, ...lastNameParts] = employee.name.split(' ');
+      setFormData({
+        firstName: firstName || '',
+        lastName: lastNameParts.join(' ') || '',
+        email: employee.email || '',
+        role: employee.role || '',
+        department: employee.department || 'Engineering',
+        joiningDate: employee.joiningDate ? new Date(employee.joiningDate).toISOString().split('T')[0] : '',
+        ctc: employee.CTC || '',
+        variablePay: employee.variablePay || '',
+        benefits: employee.benefits || '',
+        location: employee.location || 'Offshore',
+      });
+    } catch (error) {
+      console.error('Failed to fetch employee from API:', error);
+      // Fallback to localStorage
+      const existingEmployees = JSON.parse(localStorage.getItem('employees')) || [];
+      const employeeToEdit = existingEmployees.find(emp => emp.id === employeeId || emp._id === employeeId);
       if (employeeToEdit) {
         const [firstName, ...lastNameParts] = employeeToEdit.name.split(' ');
         setFormData({
@@ -50,63 +77,60 @@ const AddEmployeeCost = () => {
           location: employeeToEdit.location || 'Offshore',
         });
       }
+    } finally {
+      setLoading(false);
     }
-  }, [id, navigate]);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Prevent negative values for ctc and variablePay
-    if ((name === 'ctc' || name === 'variablePay') && value < 0) {
-      return;
-    }
-    
+    if ((name === 'ctc' || name === 'variablePay') && value < 0) return;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Final check for negative values
     if (Number(formData.ctc) < 0 || Number(formData.variablePay) < 0) {
       alert('Annual CTC and Variable Pay cannot be negative.');
       return;
     }
 
     const employeeData = {
-      id: isEditMode ? Number(id) : Date.now(),
       name: `${formData.firstName} ${formData.lastName}`,
       role: formData.role,
       department: formData.department,
       CTC: Number(formData.ctc),
       monthlyCost: Math.round(Number(formData.ctc) / 12),
-      status: isEditMode ? (JSON.parse(localStorage.getItem('employees')).find(emp => emp.id === Number(id))?.status || 'Active') : 'Active',
       email: formData.email,
       joiningDate: formData.joiningDate,
       variablePay: Number(formData.variablePay),
       location: formData.location
     };
 
-    // Get existing employees from localStorage or use defaults
-    const existingEmployees = JSON.parse(localStorage.getItem('employees')) || [
-      { id: 1, name: 'Amit Verma', role: 'Senior Developer', department: 'Engineering', CTC: 1800000, monthlyCost: 150000, status: 'Active' },
-      { id: 2, name: 'Sonal Singh', role: 'UI/UX Designer', department: 'Design', CTC: 1200000, monthlyCost: 100000, status: 'Active' },
-      { id: 3, name: 'Rahul Reddy', role: 'Product Manager', department: 'Product', CTC: 2400000, monthlyCost: 200000, status: 'Active' },
-      { id: 4, name: 'Pooja Gupta', role: 'Backend Engineer', department: 'Engineering', CTC: 1500000, monthlyCost: 125000, status: 'Active' },
-      { id: 5, name: 'Kiran Deep', role: 'QA Lead', department: 'Engineering', CTC: 1400000, monthlyCost: 116666, status: 'Bench' },
-    ];
+    try {
+      setLoading(true);
+      if (isEditMode) {
+        await employeeAPI.update(id, employeeData);
+      } else {
+        await employeeAPI.create(employeeData);
+      }
+      
+      // Update localStorage for redundancy
+      const existing = JSON.parse(localStorage.getItem('employees')) || [];
+      const updated = isEditMode 
+        ? existing.map(emp => (emp._id === id || emp.id === id) ? { ...emp, ...employeeData } : emp)
+        : [{ ...employeeData, id: Date.now() }, ...existing];
+      localStorage.setItem('employees', JSON.stringify(updated));
 
-    let updatedEmployees;
-    if (isEditMode) {
-      updatedEmployees = existingEmployees.map(emp => emp.id === Number(id) ? employeeData : emp);
-    } else {
-      updatedEmployees = [employeeData, ...existingEmployees];
+      alert(isEditMode ? 'Employee cost data updated successfully!' : 'Employee cost data added successfully!');
+      navigate('/employee-cost/list');
+    } catch (error) {
+      console.error('Failed to save employee:', error);
+      alert('Failed to save employee cost data');
+    } finally {
+      setLoading(false);
     }
-    
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-
-    alert(isEditMode ? 'Employee cost data updated successfully!' : 'Employee cost data added successfully!');
-    navigate('/employee-cost/list');
   };
 
   return (
@@ -263,10 +287,11 @@ const AddEmployeeCost = () => {
             </button>
             <button 
               type="submit" 
-              className="px-8 py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2"
+              disabled={loading}
+              className={`px-8 py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               <Save className="w-4 h-4" />
-              {isEditMode ? 'Update Employee Cost' : 'Save Employee Cost'}
+              {loading ? 'Saving...' : (isEditMode ? 'Update Employee Cost' : 'Save Employee Cost')}
             </button>
           </div>
         </form>

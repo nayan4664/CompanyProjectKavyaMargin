@@ -1,40 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Search, Filter, Download, Plus, MoreVertical, Trash2, Edit2 } from 'lucide-react';
 import { exportToCSV, exportToXML } from '../../utils/exportUtils';
 import { Link } from 'react-router-dom';
+import { employeeAPI } from '../../services/api';
 
 const EmployeeCostList = () => {
   const [employees, setEmployees] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
-
-    // Load employees from localStorage or use defaults
-    const storedEmployees = JSON.parse(localStorage.getItem('employees'));
-    if (storedEmployees) {
-      setEmployees(storedEmployees);
-    } else {
-      const defaultEmployees = [
-        { id: 1, name: 'Amit Verma', role: 'Senior Developer', department: 'Engineering', CTC: 1800000, monthlyCost: 150000, status: 'Active' },
-        { id: 2, name: 'Sonal Singh', role: 'UI/UX Designer', department: 'Design', CTC: 1200000, monthlyCost: 100000, status: 'Active' },
-        { id: 3, name: 'Rahul Reddy', role: 'Product Manager', department: 'Product', CTC: 2400000, monthlyCost: 200000, status: 'Active' },
-        { id: 4, name: 'Pooja Gupta', role: 'Backend Engineer', department: 'Engineering', CTC: 1500000, monthlyCost: 125000, status: 'Active' },
-        { id: 5, name: 'Kiran Deep', role: 'QA Lead', department: 'Engineering', CTC: 1400000, monthlyCost: 116666, status: 'Bench' },
-      ];
-      setEmployees(defaultEmployees);
-      localStorage.setItem('employees', JSON.stringify(defaultEmployees));
-    }
+    fetchEmployees();
   }, []);
 
-  const deleteEmployee = (id) => {
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+      const response = await employeeAPI.getAll();
+      setEmployees(response.data);
+    } catch (error) {
+      console.error('Failed to fetch employees:', error);
+      // Fallback to localStorage or default if API fails
+      const storedEmployees = JSON.parse(localStorage.getItem('employees'));
+      if (storedEmployees) setEmployees(storedEmployees);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteEmployee = async (id) => {
     if (window.confirm('Are you sure you want to delete this employee?')) {
-      const updatedEmployees = employees.filter(emp => emp.id !== id);
-      setEmployees(updatedEmployees);
-      localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+      try {
+        await employeeAPI.delete(id);
+        setEmployees(employees.filter(emp => emp._id !== id && emp.id !== id));
+        // Also update localStorage for consistency
+        const stored = JSON.parse(localStorage.getItem('employees')) || [];
+        localStorage.setItem('employees', JSON.stringify(stored.filter(e => e.id !== id)));
+      } catch (error) {
+        console.error('Failed to delete employee:', error);
+        alert('Failed to delete employee');
+      }
     }
   };
 
@@ -124,7 +132,7 @@ const EmployeeCostList = () => {
             </thead>
             <tbody className="divide-y divide-slate-800">
               {filteredEmployees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-slate-800/50 transition-colors group">
+                <tr key={emp._id || emp.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center font-bold text-xs">
@@ -156,13 +164,13 @@ const EmployeeCostList = () => {
                     {currentUser?.role !== 'Project Manager' && currentUser?.role !== 'Team Lead' && (
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Link 
-                          to={`/employee-cost/edit/${emp.id}`}
+                          to={`/employee-cost/edit/${emp._id || emp.id}`}
                           className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all"
                         >
                           <Edit2 className="w-4 h-4" />
                         </Link>
                         <button 
-                          onClick={() => deleteEmployee(emp.id)}
+                          onClick={() => deleteEmployee(emp._id || emp.id)}
                           className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"
                         >
                           <Trash2 className="w-4 h-4" />

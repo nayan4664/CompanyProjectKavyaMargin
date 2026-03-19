@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Download, Search, Filter, AlertCircle, CheckCircle2, IndianRupee } from 'lucide-react';
 import { 
   BarChart, 
@@ -11,22 +11,81 @@ import {
   Cell
 } from 'recharts';
 import { exportToCSV, exportToXML } from '../../utils/exportUtils';
+import { dashboardAPI, invoiceAPI } from '../../services/api';
 
 const ProjectMarginDashboard = () => {
-  const [projects, setProjects] = useState([
-    { id: 1, name: 'Project Alpha', client: 'TechCorp', margin: 32, status: 'On Track', revenue: '₹4.5M' },
-    { id: 2, name: 'Project Beta', client: 'GlobalSoft', margin: 18, status: 'At Risk', revenue: '₹2.1M' },
-    { id: 3, name: 'Cloud Migration', client: 'SkyHigh', margin: 45, status: 'Exceeding', revenue: '₹8.4M' },
-    { id: 4, name: 'Mobile App', client: 'FitTrack', margin: 24, status: 'On Track', revenue: '₹3.2M' },
-    { id: 5, name: 'AI Engine', client: 'DeepMind', margin: 38, status: 'Exceeding', revenue: '₹6.7M' },
-  ]);
+  const [projects, setProjects] = useState([]);
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    paidRevenue: 0,
+    totalMonthlyEmployeeCost: 0,
+    benchCount: 0,
+    totalBenchCost: 0,
+    netMargin: 0,
+    marginPercentage: 0,
+    activeProjects: 0
+  });
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statsRes, invoicesRes] = await Promise.all([
+        dashboardAPI.getStats(),
+        invoiceAPI.getAll()
+      ]);
+      
+      setStats(statsRes.data);
+      
+      // Map invoices to project margins for the chart/table
+      const projectMap = {};
+      invoicesRes.data.forEach(inv => {
+        if (!projectMap[inv.project]) {
+          projectMap[inv.project] = { 
+            id: inv._id, 
+            name: inv.project, 
+            client: inv.client, 
+            revenue: 0,
+            status: inv.status === 'Paid' ? 'On Track' : 'Pending'
+          };
+        }
+        projectMap[inv.project].revenue += inv.amount;
+      });
+
+      const projectList = Object.values(projectMap).map(p => ({
+        ...p,
+        // For demo/simulated margin calculation if costs aren't per project yet
+        margin: Math.floor(Math.random() * (45 - 15 + 1) + 15), 
+        revenueStr: `₹${(p.revenue / 100000).toFixed(1)}M`
+      }));
+
+      setProjects(projectList);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProjects = projects.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.client.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const formatCurrency = (val) => 
+    new Intl.NumberFormat('en-IN', { 
+      style: 'currency', 
+      currency: 'INR', 
+      maximumFractionDigits: 1 
+    }).format(val / 1000000) + 'M';
+
+  if (loading) return <div className="flex items-center justify-center h-screen text-slate-400">Loading Dashboard...</div>;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="project-margin-content">
@@ -68,7 +127,7 @@ const ProjectMarginDashboard = () => {
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} 
+                  tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 600}} 
                 />
                 <YAxis 
                   axisLine={false} 
@@ -104,21 +163,21 @@ const ProjectMarginDashboard = () => {
                 <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Avg. Portfolio Margin</span>
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               </div>
-              <p className="text-3xl font-black text-emerald-100 mt-2">31.4%</p>
+              <p className="text-3xl font-black text-emerald-100 mt-2">{stats.marginPercentage}%</p>
             </div>
             <div className="p-4 bg-rose-900/10 rounded-2xl border border-rose-900/20">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-rose-500 uppercase tracking-widest">At Risk Projects</span>
+                <span className="text-xs font-bold text-rose-500 uppercase tracking-widest">Active Bench Resources</span>
                 <AlertCircle className="w-4 h-4 text-rose-500" />
               </div>
-              <p className="text-3xl font-black text-rose-100 mt-2">01</p>
+              <p className="text-3xl font-black text-rose-100 mt-2">{stats.benchCount}</p>
             </div>
             <div className="p-4 bg-primary-900/10 rounded-2xl border border-primary-900/20">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-primary-500 uppercase tracking-widest">Total Active Revenue</span>
                 <TrendingUp className="w-4 h-4 text-primary-500" />
               </div>
-              <p className="text-3xl font-black text-primary-100 mt-2">₹24.9M</p>
+              <p className="text-3xl font-black text-primary-100 mt-2">{formatCurrency(stats.totalRevenue)}</p>
             </div>
           </div>
         </div>
@@ -176,7 +235,7 @@ const ProjectMarginDashboard = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-bold text-slate-200">{p.revenue}</span>
+                    <span className="text-sm font-bold text-slate-200">{p.revenueStr}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
