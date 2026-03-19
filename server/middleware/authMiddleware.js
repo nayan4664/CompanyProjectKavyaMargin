@@ -10,10 +10,22 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
 
-      // Get user from the token
-      req.user = await User.findById(decoded.id).select('-password');
+      // Check if it's a hardcoded or viewer user
+      if (decoded.id.startsWith('hardcoded_') || decoded.id.startsWith('viewer_')) {
+        const type = decoded.id.startsWith('hardcoded_') ? 'hardcoded' : 'viewer';
+        const email = decoded.id.replace('hardcoded_', '').replace('viewer_', '');
+        
+        req.user = {
+          _id: decoded.id,
+          email: email,
+          role: type === 'hardcoded' ? 'Admin' : 'Viewers' // Simplified for middleware
+        };
+      } else {
+        // Get user from the token (Database fallback)
+        req.user = await User.findById(decoded.id).select('-password');
+      }
 
       next();
     } catch (error) {

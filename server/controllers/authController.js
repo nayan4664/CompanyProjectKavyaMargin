@@ -17,27 +17,12 @@ const HARDCODED_USERS = {
 // @desc    Register new user
 // @route   POST /api/auth/register
 const registerUser = async (req, res) => {
-  try {
-    const { fullName, email, password, role, companyName } = req.body;
-
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'User already exists' });
-
-    const user = await User.create({ fullName, email, password, role, companyName });
-    
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        companyName: user.companyName,
-        token: generateToken(user._id)
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  // We don't save to DB as per request, but we allow the user to "register" 
+  // so they can proceed to the login page.
+  res.status(201).json({ 
+    message: 'Registration successful! You can now login with your authorized credentials.',
+    success: true 
+  });
 };
 
 // @desc    Login user
@@ -53,7 +38,7 @@ const loginUser = async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
     const hardcodedUser = HARDCODED_USERS[normalizedEmail];
 
-    // If it's one of the specific role emails, verify password
+    // Check specific hardcoded roles
     if (hardcodedUser) {
       if (password === hardcodedUser.password) {
         return res.json({
@@ -69,21 +54,16 @@ const loginUser = async (req, res) => {
       }
     }
 
-    // For any other email, check the database
-    const user = await User.findOne({ email: normalizedEmail });
-
-    if (user && (await user.comparePassword(password))) {
-      return res.json({
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        companyName: user.companyName,
-        token: generateToken(user._id)
-      });
-    } else {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+    // For any other email, treat as Viewers role with any password
+    // This is NOT saved to the database as per user request
+    return res.json({
+      _id: 'viewer_' + normalizedEmail,
+      fullName: normalizedEmail.split('@')[0] || 'Viewer',
+      email: normalizedEmail,
+      role: 'Viewers',
+      companyName: 'KavyaMargin',
+      token: generateToken('viewer_' + normalizedEmail)
+    });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -95,14 +75,15 @@ const loginUser = async (req, res) => {
 // @access  Private (Needs Middleware)
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (user) {
+    // Check if it's a hardcoded or viewer user from the request (token-based)
+    // For now, return a generic user object if the token is valid
+    if (req.user) {
       res.json({
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        companyName: user.companyName
+        _id: req.user._id,
+        fullName: req.user.fullName || 'User',
+        email: req.user.email,
+        role: req.user.role,
+        companyName: 'KavyaMargin'
       });
     } else {
       res.status(404).json({ message: 'User not found' });
