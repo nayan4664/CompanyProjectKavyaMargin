@@ -12,8 +12,39 @@ const BillingRateConfig = () => {
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingRate, setEditingRate] = useState(null);
+  const [formData, setFormData] = useState({ role: '', offshore: '', onshore: '', currency: 'INR' });
 
   const filteredRates = rates.filter(r => r.role.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const handleAdd = () => {
+    setEditingRate(null);
+    setFormData({ role: '', offshore: '', onshore: '', currency: 'INR' });
+    setShowForm(true);
+  };
+
+  const handleEdit = (rate) => {
+    setEditingRate(rate);
+    setFormData({ role: rate.role, offshore: rate.offshore, onshore: rate.onshore, currency: rate.currency });
+    setShowForm(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this rate?')) {
+      setRates(rates.filter(r => r.id !== id));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (editingRate) {
+      setRates(rates.map(r => r.id === editingRate.id ? { ...r, ...formData } : r));
+    } else {
+      setRates([...rates, { ...formData, id: Date.now(), status: 'Active' }]);
+    }
+    setShowForm(false);
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -33,12 +64,67 @@ const BillingRateConfig = () => {
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20">
+          <button 
+            onClick={handleAdd}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
+          >
             <Plus className="w-4 h-4" />
             Add New Rate
           </button>
         </div>
       </header>
+
+      {showForm && (
+        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl animate-in slide-in-from-top-4 duration-300">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400">Role</label>
+              <input 
+                type="text" 
+                required
+                value={formData.role}
+                onChange={(e) => setFormData({...formData, role: e.target.value})}
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400">Offshore Rate</label>
+              <input 
+                type="number" 
+                required
+                value={formData.offshore}
+                onChange={(e) => setFormData({...formData, offshore: Number(e.target.value)})}
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400">Onshore Rate</label>
+              <input 
+                type="number" 
+                required
+                value={formData.onshore}
+                onChange={(e) => setFormData({...formData, onshore: Number(e.target.value)})}
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button 
+                type="submit"
+                className="flex-1 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all"
+              >
+                {editingRate ? 'Update' : 'Save'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Search and Quick Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -92,10 +178,16 @@ const BillingRateConfig = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-slate-500 hover:text-primary-400 hover:bg-slate-800 rounded-lg transition-all">
+                      <button 
+                        onClick={() => handleEdit(rate)}
+                        className="p-2 text-slate-500 hover:text-primary-400 hover:bg-slate-800 rounded-lg transition-all"
+                      >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all">
+                      <button 
+                        onClick={() => handleDelete(rate.id)}
+                        className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

@@ -16,7 +16,7 @@ const DashboardLayout = ({ children }) => {
         <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
 
         {/* Content area scrolling independently */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 scrollbar-hide">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
           <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>

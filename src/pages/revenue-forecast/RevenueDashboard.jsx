@@ -220,14 +220,18 @@ const RevenueDashboard = () => {
 
             <Legend />
 
-            <Bar dataKey="confirmed" fill="#0ea5e9" />
+            <Bar dataKey="confirmed" name="Confirmed Revenue" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
 
-            <Bar dataKey="weighted" fill="#1e293b" />
+            <Bar dataKey="weighted" name="Weighted Pipeline" fill="#6366f1" radius={[4, 4, 0, 0]} />
 
             <Line
+              type="monotone"
               dataKey="target"
+              name="Target Revenue"
               stroke="#f59e0b"
               strokeWidth={3}
+              dot={{ fill: '#f59e0b', r: 4 }}
+              activeDot={{ r: 6 }}
             />
 
           </ComposedChart>

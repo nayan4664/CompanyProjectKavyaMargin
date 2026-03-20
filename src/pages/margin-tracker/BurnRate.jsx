@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Activity, Download, TrendingDown, AlertTriangle, Zap, Clock, IndianRupee } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { 
   LineChart, 
   Line, 
@@ -23,7 +24,16 @@ const burnData = [
 ];
 
 const BurnRate = () => {
+  const navigate = useNavigate();
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
+  const handleActionClick = (action) => {
+    if (action.label === 'Resource Swap') {
+      navigate('/bench-management/reallocation-suggestions');
+    } else {
+      alert(`Mitigation Action "${action.label}" initiated.\nExpected impact: ${action.impact}`);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="burn-rate-content">
@@ -132,7 +142,11 @@ const BurnRate = () => {
               { label: 'Resource Swap', impact: 'Save ₹120k/mo', status: 'Ready' },
               { label: 'Vendor Negotiation', impact: 'Save ₹15k/mo', status: 'In Progress' }
             ].map((action, i) => (
-              <div key={i} className="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:bg-slate-800 transition-all cursor-pointer">
+              <div 
+                key={i} 
+                onClick={() => handleActionClick(action)}
+                className="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:bg-slate-800 transition-all cursor-pointer"
+              >
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-bold text-slate-200">{action.label}</span>
                   <span className="text-[10px] font-black text-primary-400 uppercase">{action.status}</span>

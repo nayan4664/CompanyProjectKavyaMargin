@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   ArrowUpRight, 
@@ -33,6 +33,25 @@ const predictionData = [
 ];
 
 const MarginPrediction = () => {
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [selectedQuarter, setSelectedQuarter] = useState('Q3 2026');
+
+  const handleRunSimulation = () => {
+    setIsSimulating(true);
+    // Mock simulation delay
+    setTimeout(() => {
+      setIsSimulating(false);
+      alert('AI Simulation completed! Forecast updated based on latest resource allocation and market trends.');
+    }, 2000);
+  };
+
+  const handleQuarterChange = () => {
+    const quarters = ['Q3 2026', 'Q4 2026', 'Q1 2027', 'Q2 2027'];
+    const currentIndex = quarters.indexOf(selectedQuarter);
+    const nextIndex = (currentIndex + 1) % quarters.length;
+    setSelectedQuarter(quarters[nextIndex]);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -44,12 +63,19 @@ const MarginPrediction = () => {
           <p className="text-slate-400 mt-2 font-medium">AI-driven margin forecasts and performance projections.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm">
+          <button 
+            onClick={handleQuarterChange}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
             <Calendar className="w-4 h-4" />
-            Q3 2026
+            {selectedQuarter}
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">
-            Run Simulation
+          <button 
+            onClick={handleRunSimulation}
+            disabled={isSimulating}
+            className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 ${isSimulating ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isSimulating ? 'Simulating...' : 'Run Simulation'}
           </button>
         </div>
       </header>

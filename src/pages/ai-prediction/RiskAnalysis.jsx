@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   AlertTriangle, 
   ShieldCheck, 
@@ -9,6 +9,7 @@ import {
   Info,
   BrainCircuit
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ScatterChart, 
   Scatter, 
@@ -21,7 +22,7 @@ import {
   Cell
 } from 'recharts';
 
-const riskData = [
+const initialRiskData = [
   { name: 'Project Alpha', impact: 8, probability: 70, score: 5.6, color: '#ef4444' },
   { name: 'Resource Bench', impact: 9, probability: 40, score: 3.6, color: '#f59e0b' },
   { name: 'Project Beta', impact: 4, probability: 20, score: 0.8, color: '#10b981' },
@@ -31,6 +32,29 @@ const riskData = [
 ];
 
 const RiskAnalysis = () => {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [riskData, setRiskData] = useState(initialRiskData);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterLevel, setFilterLevel] = useState('All');
+
+  const filteredRisks = riskData.filter(r => {
+    const matchesSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLevel = filterLevel === 'All' || 
+      (filterLevel === 'High' && r.impact >= 7) ||
+      (filterLevel === 'Medium' && r.impact >= 4 && r.impact < 7) ||
+      (filterLevel === 'Low' && r.impact < 4);
+    return matchesSearch && matchesLevel;
+  });
+
+  const handleActionClick = (item) => {
+    if (item.title === 'Bench Utilization' || item.title === 'Resource Allocation') {
+      navigate('/bench-management/reallocation-suggestions');
+    } else {
+      alert(`Mitigation action "${item.action}" for "${item.title}" has been initiated.`);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -44,14 +68,43 @@ const RiskAnalysis = () => {
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input type="text" placeholder="Search risks..." className="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200" />
+            <input 
+              type="text" 
+              placeholder="Search risks..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200" 
+            />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm">
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+              showFilters ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+            }`}
+          >
             <Filter className="w-4 h-4" />
             Filters
           </button>
         </div>
       </header>
+
+      {showFilters && (
+        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex gap-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Risk Level</label>
+            <select 
+              value={filterLevel}
+              onChange={(e) => setFilterLevel(e.target.value)}
+              className="block w-40 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
+            >
+              <option value="All">All Levels</option>
+              <option value="High">High Impact</option>
+              <option value="Medium">Medium Impact</option>
+              <option value="Low">Low Impact</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Risk Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -136,8 +189,8 @@ const RiskAnalysis = () => {
                     return null;
                   }}
                 />
-                <Scatter name="Risks" data={riskData}>
-                  {riskData.map((entry, index) => (
+                <Scatter name="Risks" data={filteredRisks}>
+                  {filteredRisks.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Scatter>
@@ -156,7 +209,11 @@ const RiskAnalysis = () => {
               { title: 'Contract SLA Review', action: 'Update Penalty Clauses', risk: 'Med', color: 'amber' },
               { title: 'Resource Allocation', action: 'Reassign from Bench', risk: 'Low', color: 'emerald' }
             ].map((item, i) => (
-              <div key={i} className="p-4 border border-slate-800 rounded-xl hover:bg-slate-800/50 transition-colors group cursor-pointer">
+              <div 
+                key={i} 
+                onClick={() => handleActionClick(item)}
+                className="p-4 border border-slate-800 rounded-xl hover:bg-slate-800/50 transition-colors group cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
                     item.color === 'rose' ? 'bg-rose-500/10 text-rose-400' :

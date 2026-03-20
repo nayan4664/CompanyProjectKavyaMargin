@@ -43,6 +43,21 @@ const MarginCalculator = () => {
 
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val);
 
+  const handleSaveToScenarios = () => {
+    const existing = JSON.parse(localStorage.getItem('mock_scenarios')) || [];
+    const newScenario = {
+      id: Date.now(),
+      name: `Scenario ${existing.length + 1}`,
+      billingRate: inputs.billingRate,
+      resourceCost: inputs.resourceCost,
+      utilization: inputs.utilization,
+      margin: results.marginPercent,
+      date: new Date().toISOString()
+    };
+    localStorage.setItem('mock_scenarios', JSON.stringify([newScenario, ...existing]));
+    alert('Scenario saved successfully! You can view it in Scenario Simulator.');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="margin-calc-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -174,7 +189,10 @@ const MarginCalculator = () => {
                   <span className="text-primary-400 text-xl font-black">{formatCurrency(results.margin)}</span>
                 </div>
               </div>
-              <button className="w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
+              <button 
+                onClick={handleSaveToScenarios}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
+              >
                 Save to Scenarios
                 <ArrowRight className="w-4 h-4" />
               </button>

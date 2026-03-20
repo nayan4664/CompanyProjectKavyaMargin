@@ -234,9 +234,10 @@ const ForecastReport = () => {
 
             <button
               onClick={() => downloadReport(report)}
-              className="mt-4 w-full bg-blue-600 py-2 rounded flex justify-center gap-2 text-white hover:bg-blue-700"
+              className="mt-4 w-full bg-blue-600 py-2.5 rounded-xl flex items-center justify-center gap-2 text-white font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
             >
-              <Download size={14} /> Download
+              <Download className="w-4 h-4" /> 
+              <span>Download</span>
             </button>
 
           </div>

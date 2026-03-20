@@ -51,6 +51,12 @@ const ForecastInsights = () => {
       maximumFractionDigits: 1 
     }).format(val / 1000000) + 'M';
 
+  const handleApplyRecommendations = () => {
+    if (window.confirm('Are you sure you want to apply all AI-driven recommendations to your H2 forecast? This will update project projections and resource plans.')) {
+      alert('Recommendations applied successfully! Your forecast and project tracking have been updated.');
+    }
+  };
+
   if (loading || !data) return <div className="flex items-center justify-center h-screen text-slate-400">Analyzing data with AI...</div>;
 
   const { projections, summary, recommendations } = data;
@@ -72,7 +78,10 @@ const ForecastInsights = () => {
           >
             Export CSV
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">
+          <button 
+            onClick={handleApplyRecommendations}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+          >
             Apply Recommendations
           </button>
         </div>

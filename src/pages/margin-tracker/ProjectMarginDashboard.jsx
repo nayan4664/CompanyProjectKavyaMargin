@@ -27,6 +27,11 @@ const ProjectMarginDashboard = () => {
   });
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: 'All',
+    marginRange: 'All'
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,7 +53,7 @@ const ProjectMarginDashboard = () => {
       invoicesRes.data.forEach(inv => {
         if (!projectMap[inv.project]) {
           projectMap[inv.project] = { 
-            id: inv._id, 
+            id: inv._id || inv.id, 
             name: inv.project, 
             client: inv.client, 
             revenue: 0,
@@ -73,10 +78,21 @@ const ProjectMarginDashboard = () => {
     }
   };
 
-  const filteredProjects = projects.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.client.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProjects = projects.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p.client.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = filters.status === 'All' || p.status === filters.status;
+    
+    let matchesMargin = true;
+    if (filters.marginRange !== 'All') {
+      if (filters.marginRange === 'Low (<20%)') matchesMargin = p.margin < 20;
+      else if (filters.marginRange === 'Mid (20-35%)') matchesMargin = p.margin >= 20 && p.margin <= 35;
+      else if (filters.marginRange === 'High (>35%)') matchesMargin = p.margin > 35;
+    }
+
+    return matchesSearch && matchesStatus && matchesMargin;
+  });
 
   const formatCurrency = (val) => 
     new Intl.NumberFormat('en-IN', { 
@@ -185,21 +201,59 @@ const ProjectMarginDashboard = () => {
 
       {/* Project Table */}
       <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm overflow-hidden transition-all">
-        <div className="p-6 border-b border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:w-96">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder="Search project or client..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-transparent rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none text-slate-200"
-            />
+        <div className="p-6 border-b border-slate-800 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:w-96">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Search project or client..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-transparent rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none text-slate-200"
+              />
+            </div>
+            <button 
+              onClick={() => setShowMoreFilters(!showMoreFilters)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                showMoreFilters ? 'bg-primary-500/10 border-primary-500/50 text-primary-400' : 'bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              More Filters
+            </button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-xl text-sm font-bold transition-all border border-slate-800">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </button>
+
+          {showMoreFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-800 animate-in slide-in-from-top-2 duration-300">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Status</label>
+                <select 
+                  value={filters.status}
+                  onChange={(e) => setFilters({...filters, status: e.target.value})}
+                  className="block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
+                >
+                  <option value="All">All Status</option>
+                  <option value="On Track">On Track</option>
+                  <option value="Pending">Pending</option>
+                  <option value="At Risk">At Risk</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Margin Range</label>
+                <select 
+                  value={filters.marginRange}
+                  onChange={(e) => setFilters({...filters, marginRange: e.target.value})}
+                  className="block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
+                >
+                  <option value="All">All Ranges</option>
+                  <option value="Low (<20%)">Low (&lt;20%)</option>
+                  <option value="Mid (20-35%)">Mid (20-35%)</option>
+                  <option value="High (>35%)">High (&gt;35%)</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left border-collapse">

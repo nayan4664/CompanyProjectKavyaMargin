@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Target, Download, TrendingUp, AlertCircle, Search, ChevronRight, IndianRupee } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { 
   AreaChart, 
   Area, 
@@ -21,6 +22,7 @@ const budgetData = [
 ];
 
 const BudgetTracking = () => {
+  const navigate = useNavigate();
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
@@ -110,7 +112,11 @@ const BudgetTracking = () => {
           { name: 'Cloud Migration', budget: 2500000, spent: 1800000, color: 'emerald' },
           { name: 'Mobile App', budget: 1200000, spent: 1100000, color: 'amber' }
         ].map((item, i) => (
-          <div key={i} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm hover:border-primary-500/30 transition-all group cursor-pointer">
+          <div 
+            key={i} 
+            onClick={() => navigate('/margin-tracker/dashboard')}
+            className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm hover:border-primary-500/30 transition-all group cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-6">
               <h4 className="font-bold text-slate-100">{item.name}</h4>
               <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-primary-500 transition-colors" />

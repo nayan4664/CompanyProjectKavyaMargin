@@ -12,13 +12,43 @@ const DepartmentMapping = () => {
   ]);
 
   const [newDept, setNewDept] = useState({ name: '', head: '', staffCount: '', budget: '' });
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!newDept.name.trim()) {
+      newErrors.name = 'Department Name is required';
+    } else if (!/^[a-zA-Z\s]+$/.test(newDept.name)) {
+      newErrors.name = 'Name should contain only letters';
+    }
+
+    if (!newDept.head.trim()) {
+      newErrors.head = 'Department Head is required';
+    } else if (!/^[a-zA-Z\s]+$/.test(newDept.head)) {
+      newErrors.head = 'Head Name should contain only letters';
+    }
+
+    if (newDept.staffCount === '' || Number(newDept.staffCount) < 0) {
+      newErrors.staffCount = 'Cannot be negative';
+    }
+
+    if (!newDept.budget.trim()) {
+      newErrors.budget = 'Budget is required';
+    } else if (newDept.budget.includes('-')) {
+      newErrors.budget = 'Budget cannot be negative';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAddDept = (e) => {
     e.preventDefault();
-    if (newDept.name && newDept.head) {
-      setDepartments([...departments, { ...newDept, id: Date.now() }]);
-      setNewDept({ name: '', head: '', staffCount: '', budget: '' });
-    }
+    if (!validateForm()) return;
+    
+    setDepartments([...departments, { ...newDept, id: Date.now() }]);
+    setNewDept({ name: '', head: '', staffCount: '', budget: '' });
+    setErrors({});
   };
 
   const deleteDept = (id) => {
@@ -55,9 +85,13 @@ const DepartmentMapping = () => {
                 type="text" 
                 placeholder="e.g. Quality Assurance"
                 value={newDept.name}
-                onChange={(e) => setNewDept({ ...newDept, name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200" 
+                onChange={(e) => {
+                  setNewDept({ ...newDept, name: e.target.value });
+                  if (errors.name) setErrors({ ...errors, name: '' });
+                }}
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
               />
+              {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-300 ml-1">Department Head</label>
@@ -65,9 +99,13 @@ const DepartmentMapping = () => {
                 type="text" 
                 placeholder="Manager Name"
                 value={newDept.head}
-                onChange={(e) => setNewDept({ ...newDept, head: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200" 
+                onChange={(e) => {
+                  setNewDept({ ...newDept, head: e.target.value });
+                  if (errors.head) setErrors({ ...errors, head: '' });
+                }}
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.head ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
               />
+              {errors.head && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.head}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -76,9 +114,13 @@ const DepartmentMapping = () => {
                   type="number" 
                   placeholder="0"
                   value={newDept.staffCount}
-                  onChange={(e) => setNewDept({ ...newDept, staffCount: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200" 
+                  onChange={(e) => {
+                    setNewDept({ ...newDept, staffCount: e.target.value });
+                    if (errors.staffCount) setErrors({ ...errors, staffCount: '' });
+                  }}
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.staffCount ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
                 />
+                {errors.staffCount && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.staffCount}</p>}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-300 ml-1">Budget</label>
@@ -86,9 +128,13 @@ const DepartmentMapping = () => {
                   type="text" 
                   placeholder="₹0"
                   value={newDept.budget}
-                  onChange={(e) => setNewDept({ ...newDept, budget: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200" 
+                  onChange={(e) => {
+                    setNewDept({ ...newDept, budget: e.target.value });
+                    if (errors.budget) setErrors({ ...errors, budget: '' });
+                  }}
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.budget ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
                 />
+                {errors.budget && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.budget}</p>}
               </div>
             </div>
             <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">

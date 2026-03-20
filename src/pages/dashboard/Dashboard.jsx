@@ -10,8 +10,12 @@ import {
   ShieldCheck,
   TrendingDown,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  RefreshCcw,
+  Building2,
+  ArrowRight
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { 
   XAxis, 
   YAxis, 
@@ -73,28 +77,29 @@ const StatCard = ({ title, value, change, icon: Icon, trend, color, isDarkMode }
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
 
+  const refreshData = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="max-w-[1600px] mx-auto space-y-10 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className={`text-4xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-            Enterprise <span className="text-blue-500">Overview</span>
+        <div>
+          <h1 className="text-4xl font-black text-slate-100 tracking-tight flex items-center gap-4">
+            Enterprise Dashboard
+            <div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
+              <span className="text-xs font-black uppercase tracking-widest text-blue-500 animate-pulse">Live</span>
+            </div>
           </h1>
-          <p className={`font-medium text-sm flex items-center gap-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-            <Activity className="w-4 h-4 text-blue-500/50" />
-            Live system monitoring and cross-module intelligence
-          </p>
+          <p className="text-slate-400 mt-2 font-bold tracking-wide">Real-time resource allocation & margin intelligence</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className={`px-4 py-2 border rounded-2xl text-xs font-bold ${
-            isDarkMode ? 'bg-slate-900/50 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-slate-500'
-          }`}>
-            Updated: Just now
-          </div>
-          <button className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 uppercase tracking-widest">
-            Refresh Data
-          </button>
-        </div>
+        <button 
+          onClick={refreshData}
+          className="flex items-center gap-2.5 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group"
+        >
+          <RefreshCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500 text-blue-500" />
+          REFRESH DATA
+        </button>
       </header>
 
       {/* Primary KPIs */}
@@ -215,44 +220,49 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Module Health/Insights */}
-        <div className={`p-8 rounded-[2.5rem] border shadow-xl flex flex-col ${
-          isDarkMode ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-gray-100'
-        }`}>
-          <h3 className={`text-xl font-black tracking-tight mb-8 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-            Module <span className="text-blue-500">Intelligence</span>
-          </h3>
-          <div className="flex-1 space-y-5">
-            {moduleInsights.map((item, i) => (
-              <div key={i} className={`group p-4 rounded-[1.5rem] border transition-all duration-300 cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-slate-800/20 hover:bg-slate-800/40 border-slate-800/50' 
-                  : 'bg-gray-50 hover:bg-gray-100 border-gray-100'
-              }`}>
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-2xl group-hover:scale-110 transition-transform ${
-                    isDarkMode ? 'bg-slate-950/50' : 'bg-white'
-                  } ${item.color}`}>
-                    <item.icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className={`text-xs font-black tracking-tight truncate ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>{item.label}</p>
-                      <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{item.status}</span>
+        {/* Right Column: Module Insights */}
+        <div className="space-y-8">
+          <Link to="/organization/company-setup" className="block group">
+            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-8 rounded-[2rem] hover:border-blue-500/50 transition-all duration-500 shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
+                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform duration-500">
+                  <Building2 className="w-7 h-7" />
+                </div>
+                <div className="flex -space-x-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="w-10 h-10 rounded-xl border-4 border-slate-950 bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-400">
+                      HQ
                     </div>
-                    <p className={`text-lg font-black mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value}</p>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-          <button className={`w-full mt-8 py-4 border text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all ${
-            isDarkMode 
-              ? 'bg-blue-500/5 hover:bg-blue-500/10 border-blue-500/20 text-blue-400' 
-              : 'bg-blue-50 hover:bg-blue-100 border-blue-100 text-blue-600'
-          }`}>
-            System Deep Dive
-          </button>
+              <h3 className="text-xl font-black text-slate-100 mb-2 group-hover:text-blue-500 transition-colors">Organization</h3>
+              <p className="text-sm text-slate-500 font-bold leading-relaxed mb-6">Global entity configuration and departmental hierarchy mapping.</p>
+              <div className="flex items-center gap-2 text-xs font-black text-blue-500 uppercase tracking-widest">
+                Configure Setup
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/employee-cost/list" className="block group">
+            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-8 rounded-[2rem] hover:border-emerald-500/50 transition-all duration-500 shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
+                <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform duration-500">
+                  <Users className="w-7 h-7" />
+                </div>
+                <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <span className="text-xs font-black text-emerald-500 uppercase tracking-tighter">+12 New</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-black text-slate-100 mb-2 group-hover:text-emerald-500 transition-colors">Employee Cost</h3>
+              <p className="text-sm text-slate-500 font-bold leading-relaxed mb-6">Granular cost breakdown and professional resource management.</p>
+              <div className="flex items-center gap-2 text-xs font-black text-emerald-500 uppercase tracking-widest">
+                Manage Resources
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

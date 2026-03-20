@@ -57,8 +57,16 @@ const Register = () => {
       }
     });
 
+    if (formData.fullName && !/^[a-zA-Z\s]+$/.test(formData.fullName)) {
+      newErrors.fullName = 'Full Name should accept only alphabetic characters';
+    }
+
     if (formData.contactNo && formData.contactNo.length !== 10) {
-      newErrors.contactNo = 'Must be exactly 10 digits';
+      newErrors.contactNo = 'Contact number must be exactly 10 digits';
+    }
+
+    if (formData.address && formData.address.length < 5) {
+      newErrors.address = 'Please provide a valid office location';
     }
 
     if (formData.userRole && formData.email) {

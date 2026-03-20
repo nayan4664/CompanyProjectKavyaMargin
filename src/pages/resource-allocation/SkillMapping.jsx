@@ -12,12 +12,35 @@ const skillData = [
 
 const SkillMapping = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [filters, setFilters] = useState({
+    level: 'All',
+    experience: 'All',
+    primarySkill: 'All'
+  });
 
-  const filteredSkills = skillData.filter(s => 
-    s.resource.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.primary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.secondary.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const levels = ['All', 'Expert', 'Advanced', 'Intermediate'];
+  const primarySkills = ['All', ...new Set(skillData.map(s => s.primary))];
+  const expRanges = ['All', '0-3 Years', '4-7 Years', '8+ Years'];
+
+  const filteredSkills = skillData.filter(s => {
+    const matchesSearch = s.resource.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.primary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.secondary.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesLevel = filters.level === 'All' || s.level === filters.level;
+    const matchesSkill = filters.primarySkill === 'All' || s.primary === filters.primarySkill;
+    
+    let matchesExp = true;
+    if (filters.experience !== 'All') {
+      const exp = parseInt(s.experience);
+      if (filters.experience === '0-3 Years') matchesExp = exp <= 3;
+      else if (filters.experience === '4-7 Years') matchesExp = exp >= 4 && exp <= 7;
+      else if (filters.experience === '8+ Years') matchesExp = exp >= 8;
+    }
+
+    return matchesSearch && matchesLevel && matchesSkill && matchesExp;
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -76,21 +99,63 @@ const SkillMapping = () => {
 
       {/* Skill Matrix Table */}
       <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:w-96">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder="Search by name or skill..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200"
-            />
+        <div className="p-6 border-b border-slate-800 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:w-96">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Search by name or skill..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200"
+              />
+            </div>
+            <button 
+              onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                showAdvancedSearch ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'bg-slate-800/50 text-slate-300 border-slate-800 hover:bg-slate-800'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              Advanced Search
+            </button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-xl text-sm font-bold transition-all border border-slate-800">
-            <Filter className="w-4 h-4" />
-            Advanced Search
-          </button>
+
+          {showAdvancedSearch && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-800 animate-in slide-in-from-top-2 duration-300">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Proficiency</label>
+                <select 
+                  value={filters.level}
+                  onChange={(e) => setFilters({...filters, level: e.target.value})}
+                  className="block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {levels.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Primary Skill</label>
+                <select 
+                  value={filters.primarySkill}
+                  onChange={(e) => setFilters({...filters, primarySkill: e.target.value})}
+                  className="block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {primarySkills.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Experience</label>
+                <select 
+                  value={filters.experience}
+                  onChange={(e) => setFilters({...filters, experience: e.target.value})}
+                  className="block w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {expRanges.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

@@ -218,7 +218,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-hide">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {filteredMenuItems.map((item) => (
             <div key={item.label}>
               {item.path ? (

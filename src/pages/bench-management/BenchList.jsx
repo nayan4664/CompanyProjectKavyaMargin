@@ -13,6 +13,8 @@ const defaultBenchData = [
 const BenchList = () => {
   const [benchList, setBenchList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDept, setSelectedDept] = useState('All');
+  const [showDeptFilter, setShowDeptFilter] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
@@ -23,6 +25,8 @@ const BenchList = () => {
     setCurrentUser(user);
     fetchBenchData();
   }, []);
+
+  const departments = ['All', ...new Set(benchList.map(res => res.dept))];
 
   const fetchBenchData = async () => {
     try {
@@ -95,11 +99,15 @@ const BenchList = () => {
     }
   };
 
-  const filteredBench = benchList.filter(res => 
-    res.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    res.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    res.dept.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBench = benchList.filter(res => {
+    const matchesSearch = res.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      res.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      res.dept.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesDept = selectedDept === 'All' || res.dept === selectedDept;
+    
+    return matchesSearch && matchesDept;
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -162,21 +170,45 @@ const BenchList = () => {
 
       {/* Bench Table */}
       <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-sm overflow-hidden transition-colors">
-        <div className="p-6 border-b border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:w-96">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder="Search by name or role..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200 transition-all"
-            />
+        <div className="p-6 border-b border-slate-800 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:w-96">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                placeholder="Search by name or role..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200 transition-all"
+              />
+            </div>
+            <button 
+              onClick={() => setShowDeptFilter(!showDeptFilter)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                showDeptFilter ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              Filter by Dept
+            </button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all border border-slate-700">
-            <Filter className="w-4 h-4" />
-            Filter by Dept
-          </button>
+
+          {showDeptFilter && (
+            <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-800 animate-in slide-in-from-top-2 duration-300">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Department</label>
+                <select 
+                  value={selectedDept}
+                  onChange={(e) => setSelectedDept(e.target.value)}
+                  className="block w-48 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left border-collapse">

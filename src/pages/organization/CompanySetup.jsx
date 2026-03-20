@@ -19,6 +19,7 @@ const CompanySetup = () => {
 
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchCompanyData();
@@ -41,10 +42,50 @@ const CompanySetup = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.companyName.trim()) {
+      newErrors.companyName = 'Company Name is required';
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.companyName)) {
+      newErrors.companyName = 'Company Name should contain only alphabetic characters';
+    }
+
+    if (!formData.registrationNumber.trim()) {
+      newErrors.registrationNumber = 'Registration Number is required';
+    } else if (!/^[A-Z0-9-]+$/i.test(formData.registrationNumber)) {
+      newErrors.registrationNumber = 'Invalid format. Use alphanumeric characters and hyphens only';
+    }
+
+    if (!formData.website.trim()) {
+      newErrors.website = 'Website is required';
+    } else if (!/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(formData.website)) {
+      newErrors.website = 'Enter a valid website URL';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Work Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Enter a valid email address';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'Office Address is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    
     try {
       setIsSaving(true);
       await companyAPI.update(formData);
@@ -94,8 +135,9 @@ const CompanySetup = () => {
                   value={formData.companyName}
                   onChange={handleInputChange}
                   placeholder="Enter Company name"
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.companyName ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
                 />
+                {errors.companyName && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.companyName}</p>}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-300 ml-1 flex items-center gap-2">
@@ -108,8 +150,9 @@ const CompanySetup = () => {
                   value={formData.registrationNumber}
                   onChange={handleInputChange}
                   placeholder="Enter Registration No"
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.registrationNumber ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
                 />
+                {errors.registrationNumber && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.registrationNumber}</p>}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-300 ml-1 flex items-center gap-2">
@@ -122,8 +165,9 @@ const CompanySetup = () => {
                   value={formData.website}
                   onChange={handleInputChange}
                   placeholder="Enter Website"
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.website ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
                 />
+                {errors.website && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.website}</p>}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-300 ml-1 flex items-center gap-2">
@@ -136,8 +180,9 @@ const CompanySetup = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter Work Email"
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all" 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.email ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
                 />
+                {errors.email && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.email}</p>}
               </div>
             </div>
 
@@ -152,8 +197,9 @@ const CompanySetup = () => {
                 onChange={handleInputChange}
                 placeholder="Enter Office Address"
                 rows="3"
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 transition-all resize-none"
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.address ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all resize-none`}
               ></textarea>
+              {errors.address && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.address}</p>}
             </div>
 
             <div className="flex justify-end pt-4">

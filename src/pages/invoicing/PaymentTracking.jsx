@@ -120,19 +120,6 @@ const PaymentTracking = () => {
         </div>
 
         <div className="flex gap-3">
-
-          {/* SEARCH */}
-          <div className="flex items-center gap-2 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800">
-            <Search className="w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search client..."
-              className="bg-transparent outline-none text-sm text-slate-200"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
           {/* EXPORT */}
           <button
             onClick={() =>
@@ -143,7 +130,6 @@ const PaymentTracking = () => {
             <Download className="w-4 h-4" />
             Export
           </button>
-
         </div>
       </header>
 
@@ -203,8 +189,20 @@ const PaymentTracking = () => {
       {/* TRANSACTION TABLE */}
       <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
 
-        <div className="p-6 border-b border-slate-800">
+        <div className="p-6 border-b border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
           <h4 className="text-slate-100 font-bold">Recent Transactions</h4>
+          
+          {/* SEARCH moved above table */}
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 w-full md:w-80">
+            <Search className="w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search client..."
+              className="bg-transparent outline-none text-sm text-slate-200 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -279,7 +277,7 @@ const PaymentTracking = () => {
 
       {/* SEND REMINDER BUTTON */}
 
-      {currentUser?.role !== 'Viewers' && (
+      {currentUser?.role === 'Super Admin' && (
         <div className="flex justify-end">
 
           <button

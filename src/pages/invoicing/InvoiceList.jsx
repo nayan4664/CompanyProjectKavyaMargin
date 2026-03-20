@@ -127,6 +127,10 @@ const InvoiceList = () => {
   const currentInvoices = filteredInvoices.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredInvoices.length / invoicesPerPage);
 
+  const handleViewPDF = (invoice) => {
+    alert(`Generating PDF for ${invoice.invoiceId || invoice.id}...\nClient: ${invoice.client}\nAmount: ${formatCurrency(invoice.amount)}\n\nIn a real application, this would open a PDF viewer or download the file.`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -165,7 +169,7 @@ const InvoiceList = () => {
             <Download className="w-4 h-4" />
           </button>
 
-          {currentUser?.role !== 'Viewers' && (
+          {currentUser?.role === 'Super Admin' && (
             <Link
               to="/invoicing/generate"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
@@ -262,10 +266,14 @@ const InvoiceList = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all" title="View PDF">
+                      <button 
+                        onClick={() => handleViewPDF(inv)}
+                        className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all" 
+                        title="View PDF"
+                      >
                         <ExternalLink className="w-4 h-4" />
                       </button>
-                      {currentUser?.role !== 'Viewers' && (
+                      {currentUser?.role === 'Super Admin' && (
                         <button
                           onClick={() => deleteInvoice(inv._id || inv.id)}
                           className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"

@@ -11,13 +11,38 @@ const BillingModel = () => {
   ]);
 
   const [newModel, setNewModel] = useState({ name: '', description: '', margin: '' });
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!newModel.name.trim()) {
+      newErrors.name = 'Model Name is required';
+    } else if (!/^[a-zA-Z\s]+$/.test(newModel.name)) {
+      newErrors.name = 'Model Name should contain only letters and spaces';
+    }
+
+    if (!newModel.margin.trim()) {
+      newErrors.margin = 'Target Margin is required';
+    } else if (!/^[\d\s\-%]+$/.test(newModel.margin) || !/\d/.test(newModel.margin)) {
+      newErrors.margin = 'Accepts numeric percentage values only (e.g., 10%, 20-30)';
+    }
+
+    if (!newModel.description.trim()) {
+      newErrors.description = 'Description is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAddModel = (e) => {
     e.preventDefault();
-    if (newModel.name && newModel.description) {
-      setModels([...models, { ...newModel, id: Date.now(), status: 'Active' }]);
-      setNewModel({ name: '', description: '', margin: '' });
-    }
+    if (!validateForm()) return;
+    
+    setModels([...models, { ...newModel, id: Date.now(), status: 'Active' }]);
+    setNewModel({ name: '', description: '', margin: '' });
+    setErrors({});
   };
 
   const deleteModel = (id) => {
@@ -54,9 +79,13 @@ const BillingModel = () => {
                 type="text" 
                 placeholder="e.g. Hybrid Model"
                 value={newModel.name}
-                onChange={(e) => setNewModel({ ...newModel, name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200" 
+                onChange={(e) => {
+                  setNewModel({ ...newModel, name: e.target.value });
+                  if (errors.name) setErrors({ ...errors, name: '' });
+                }}
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
               />
+              {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-300 ml-1">Target Margin (%)</label>
@@ -64,19 +93,27 @@ const BillingModel = () => {
                 type="text" 
                 placeholder="e.g. 30-35%"
                 value={newModel.margin}
-                onChange={(e) => setNewModel({ ...newModel, margin: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200" 
+                onChange={(e) => {
+                  setNewModel({ ...newModel, margin: e.target.value });
+                  if (errors.margin) setErrors({ ...errors, margin: '' });
+                }}
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.margin ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
               />
+              {errors.margin && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.margin}</p>}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-300 ml-1">Description</label>
               <textarea 
                 placeholder="Briefly describe the billing logic..."
                 value={newModel.description}
-                onChange={(e) => setNewModel({ ...newModel, description: e.target.value })}
+                onChange={(e) => {
+                  setNewModel({ ...newModel, description: e.target.value });
+                  if (errors.description) setErrors({ ...errors, description: '' });
+                }}
                 rows="3"
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-200 resize-none"
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.description ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 resize-none`}
               ></textarea>
+              {errors.description && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.description}</p>}
             </div>
             <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
               <Plus className="w-4 h-4" />

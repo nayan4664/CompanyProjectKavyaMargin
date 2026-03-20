@@ -24,17 +24,30 @@ const ScenarioSimulator = () => {
     name: 'New Scenario',
     billingRate: 50,
     resources: 12,
+    utilization: 85,
   });
 
   const runSimulation = () => {
     // Mock calculation
-    const margin = (simulation.billingRate * 0.6) - (simulation.resources * 0.5);
+    const revenue = simulation.billingRate * (160 * (simulation.utilization / 100));
+    const cost = 18 * 160; // Base cost $18/hr
+    const margin = revenue > 0 ? ((revenue - cost) / revenue) * 100 : 0;
+    
     const newScenario = {
       ...simulation,
       id: Date.now(),
-      margin: Math.max(15, Math.min(55, margin)), // clamped for realism
+      margin: Math.max(5, Math.min(60, margin)), // realistic range
     };
     setScenarios([...scenarios, newScenario]);
+  };
+
+  const handleReset = () => {
+    setSimulation({
+      name: 'New Scenario',
+      billingRate: 50,
+      resources: 12,
+      utilization: 85,
+    });
   };
 
   return (
@@ -88,9 +101,24 @@ const ScenarioSimulator = () => {
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-300">Utilization (%)</label>
+              <input 
+                type="range" 
+                min="0" max="100"
+                value={simulation.utilization}
+                onChange={(e) => setSimulation({ ...simulation, utilization: Number(e.target.value) })}
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary-600" 
+              />
+              <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                <span>0%</span>
+                <span className="text-primary-500">{simulation.utilization}%</span>
+                <span>100%</span>
+              </div>
+            </div>
             <div className="pt-4 flex gap-3">
               <button 
-                onClick={() => setSimulation({ name: 'New Scenario', billingRate: 50, resources: 12 })}
+                onClick={handleReset}
                 className="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />

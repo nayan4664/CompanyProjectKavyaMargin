@@ -84,13 +84,40 @@ const AddEmployeeCost = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Prevent negative values for financial fields
     if ((name === 'ctc' || name === 'variablePay') && value < 0) return;
+    
+    // Validation for alphabetical fields: First Name, Last Name, and Role
+    if (['firstName', 'lastName', 'role'].includes(name)) {
+      // Only allow letters and spaces
+      const alphabetRegex = /^[a-zA-Z\s]*$/;
+      if (!alphabetRegex.test(value)) {
+        return; // Don't update state if invalid character
+      }
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Final validation check
+    const alphabetRegex = /^[a-zA-Z\s]+$/;
+    if (!alphabetRegex.test(formData.firstName.trim())) {
+      alert('First Name should only contain alphabetic characters.');
+      return;
+    }
+    if (!alphabetRegex.test(formData.lastName.trim())) {
+      alert('Last Name should only contain alphabetic characters.');
+      return;
+    }
+    if (!alphabetRegex.test(formData.role.trim())) {
+      alert('Designation / Role should only contain alphabetic characters.');
+      return;
+    }
+
     if (Number(formData.ctc) < 0 || Number(formData.variablePay) < 0) {
       alert('Annual CTC and Variable Pay cannot be negative.');
       return;
