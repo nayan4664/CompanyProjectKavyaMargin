@@ -12,7 +12,7 @@ import {
   Trash2,
   Plus
 } from 'lucide-react';
-import { exportToCSV, exportToXML } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 import { Link } from 'react-router-dom';
 import { invoiceAPI } from '../../services/api';
 
@@ -46,6 +46,11 @@ const InvoiceList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const invoicesPerPage = 5;
 
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchTerm]);
+
   // Load user and invoices
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -57,23 +62,37 @@ const InvoiceList = () => {
     try {
       setLoading(true);
       const response = await invoiceAPI.getAll();
-      if (response.data.length > 0) {
-        setInvoices(response.data);
+      
+      let data = response.data;
+
+      if (data && data.length > 0) {
+        // Deduplicate by invoiceId/id
+        const uniqueInvoices = [];
+        const seenIds = new Set();
+        data.forEach(inv => {
+          const id = inv.invoiceId || inv.id;
+          if (!seenIds.has(id)) {
+            seenIds.add(id);
+            uniqueInvoices.push(inv);
+          }
+        });
+        setInvoices(uniqueInvoices);
       } else {
         // default demo invoices if DB is empty
         const demo = [
-          { _id: '1', invoiceId: 'INV-2026-001', client: 'TechCorp', project: 'Project Alpha', amount: 450000, date: '2026-03-01', dueDate: '2026-03-15', status: 'Paid' },
-          { _id: '2', invoiceId: 'INV-2026-002', client: 'GlobalSoft', project: 'Project Beta', amount: 210000, date: '2026-03-02', dueDate: '2026-03-16', status: 'Pending' },
-          { _id: '3', invoiceId: 'INV-2026-003', client: 'SkyHigh', project: 'Cloud Migration', amount: 840000, date: '2026-03-05', dueDate: '2026-03-20', status: 'Overdue' },
-          { _id: '4', invoiceId: 'INV-2026-004', client: 'FitTrack', project: 'Mobile App', amount: 320000, date: '2026-03-07', dueDate: '2026-03-21', status: 'Pending' },
+          { invoiceId: 'INV-2026-001', client: 'TechCorp', project: 'Project Alpha', amount: 450000, date: '2026-03-01', dueDate: '2026-03-15', status: 'Paid' },
+          { invoiceId: 'INV-2026-002', client: 'GlobalSoft', project: 'Project Beta', amount: 210000, date: '2026-03-02', dueDate: '2026-03-16', status: 'Pending' },
+          { invoiceId: 'INV-2026-003', client: 'SkyHigh', project: 'Cloud Migration', amount: 840000, date: '2026-03-05', dueDate: '2026-03-20', status: 'Overdue' },
+          { invoiceId: 'INV-2026-004', client: 'FitTrack', project: 'Mobile App', amount: 320000, date: '2026-03-07', dueDate: '2026-03-21', status: 'Pending' },
         ];
-        setInvoices(demo);
-        // Seed demo data to DB
+        
+        // Clear existing to avoid duplicates during seeding
+        localStorage.removeItem('mock_invoices');
+        
         for (const inv of demo) {
-          const { _id, ...data } = inv;
-          await invoiceAPI.create(data);
+          await invoiceAPI.create(inv);
         }
-        // Refetch to get real IDs
+        
         const refetch = await invoiceAPI.getAll();
         setInvoices(refetch.data);
       }
@@ -111,15 +130,37 @@ const InvoiceList = () => {
 
   // Filtering
   const filteredInvoices = invoices.filter(inv => {
-    const invId = inv.invoiceId || inv.id || '';
-    const matchSearch =
-      invId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.project.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchStatus =
-      statusFilter === "All" || inv.status === statusFilter;
-    return matchSearch && matchStatus;
+    // 1. Status filter (Highest Priority)
+    if (statusFilter !== "All") {
+      if (inv.status !== statusFilter) {
+        return false;
+      }
+    }
+
+    // 2. Search filter
+    const searchStr = searchTerm.toLowerCase().trim();
+    if (searchStr) {
+      const id = String(inv.invoiceId || inv.id || "").toLowerCase();
+      const client = String(inv.client || "").toLowerCase();
+      const project = String(inv.project || "").toLowerCase();
+      
+      const matchesSearch = id.includes(searchStr) || 
+                           client.includes(searchStr) || 
+                           project.includes(searchStr);
+      
+      if (!matchesSearch) return false;
+    }
+
+    return true;
   });
+
+  // Calculate stats from filtered data
+  const stats = {
+    total: filteredInvoices.reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0),
+    paid: filteredInvoices.filter(i => i.status?.toLowerCase() === 'paid').reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0),
+    pending: filteredInvoices.filter(i => i.status?.toLowerCase() === 'pending').reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0),
+    overdue: filteredInvoices.filter(i => i.status?.toLowerCase() === 'overdue').reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0),
+  };
 
   // Pagination
   const indexOfLast = currentPage * invoicesPerPage;
@@ -156,17 +197,10 @@ const InvoiceList = () => {
         <div className="flex gap-2">
           <button
             onClick={() => exportToCSV(invoices, 'Invoice_Report.csv')}
-            className="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
-            title="Export CSV"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
           >
             <Download className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => exportToXML(invoices, 'Invoice_Report.xml', 'Invoices')}
-            className="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
-            title="Export XML"
-          >
-            <Download className="w-4 h-4" />
+            Export CSV
           </button>
 
           {currentUser?.role === 'Super Admin' && (
@@ -183,10 +217,10 @@ const InvoiceList = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Invoiced (MTD)" value="₹18.2L" />
-        <StatCard title="Received" value="₹4.5L" color="emerald" icon={<CheckCircle2 className="w-5 h-5" />} />
-        <StatCard title="Pending" value="₹5.3L" color="amber" icon={<Clock className="w-5 h-5" />} />
-        <StatCard title="Overdue" value="₹8.4L" color="rose" icon={<AlertCircle className="w-5 h-5" />} />
+        <StatCard title="Total Invoiced" value={formatCurrency(stats.total)} />
+        <StatCard title="Received" value={formatCurrency(stats.paid)} color="emerald" icon={<CheckCircle2 className="w-5 h-5" />} />
+        <StatCard title="Pending" value={formatCurrency(stats.pending)} color="amber" icon={<Clock className="w-5 h-5" />} />
+        <StatCard title="Overdue" value={formatCurrency(stats.overdue)} color="rose" icon={<AlertCircle className="w-5 h-5" />} />
       </div>
 
       {/* Table */}
@@ -233,8 +267,8 @@ const InvoiceList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {currentInvoices.map((inv) => (
-                <tr key={inv._id || inv.id} className="hover:bg-slate-800/50 transition-colors group">
+              {currentInvoices.map((inv, index) => (
+                <tr key={`${inv.invoiceId || inv.id}-${index}`} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="px-6 py-4">
                     <span className="text-sm font-bold text-slate-200">{inv.invoiceId || inv.id}</span>
                   </td>

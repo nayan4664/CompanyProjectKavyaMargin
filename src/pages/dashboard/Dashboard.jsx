@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   TrendingUp, 
@@ -13,7 +13,10 @@ import {
   ArrowDownRight,
   RefreshCcw,
   Building2,
-  ArrowRight
+  ArrowRight,
+  Target,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
@@ -26,6 +29,7 @@ import {
   Area
 } from 'recharts';
 import { useTheme } from '../../context/ThemeContext';
+import { invoiceAPI, employeeAPI, benchAPI } from '../../services/api';
 
 const performanceData = [
   { month: 'Jan', revenue: 45, margin: 32, cost: 28 },
@@ -34,15 +38,6 @@ const performanceData = [
   { month: 'Apr', revenue: 61, margin: 35, cost: 38 },
   { month: 'May', revenue: 55, margin: 38, cost: 35 },
   { month: 'Jun', revenue: 67, margin: 36, cost: 42 },
-];
-
-const moduleInsights = [
-  { label: 'Organization', icon: ShieldCheck, status: 'Active', value: '12 Depts', color: 'text-blue-400' },
-  { label: 'Employee Cost', icon: Users, status: 'On Track', value: '₹12.4M', color: 'text-indigo-400' },
-  { label: 'Bench Management', icon: Briefcase, status: 'Optimization', value: '18 Resources', color: 'text-amber-400' },
-  { label: 'Contract Analyzer', icon: FileText, status: '8 New', value: '94% Compliance', color: 'text-emerald-400' },
-  { label: 'AI Prediction', icon: BrainCircuit, status: '92% Acc', value: '+4.2% Growth', color: 'text-purple-400' },
-  { label: 'Automated Invoicing', icon: Receipt, status: 'Pending', value: '₹8.2M Due', color: 'text-rose-400' },
 ];
 
 const StatCard = ({ title, value, change, icon: Icon, trend, color, isDarkMode }) => (
@@ -76,6 +71,36 @@ const StatCard = ({ title, value, change, icon: Icon, trend, color, isDarkMode }
 
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
+  const [liveStats, setLiveStats] = useState({
+    revenue: '₹0.0M',
+    employees: '0',
+    bench: '0',
+    invoices: '0'
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [invRes, empRes, benchRes] = await Promise.all([
+          invoiceAPI.getAll(),
+          employeeAPI.getAll(),
+          benchAPI.getAll()
+        ]);
+
+        const totalRevenue = invRes.data.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+        
+        setLiveStats({
+          revenue: `₹${(totalRevenue / 1000000).toFixed(1)}M`,
+          employees: empRes.data.length.toString(),
+          bench: benchRes.data.length.toString(),
+          invoices: invRes.data.length.toString()
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const refreshData = () => {
     window.location.reload();
@@ -105,39 +130,39 @@ const Dashboard = () => {
       {/* Primary KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title="Total Portfolio Margin" 
-          value="₹32.4M" 
-          change="8.4" 
+          title="Consolidated Revenue" 
+          value={liveStats.revenue} 
+          change="12.4" 
           trend="up" 
           icon={TrendingUp}
           color="text-blue-400"
           isDarkMode={isDarkMode}
         />
         <StatCard 
-          title="Operational Cost" 
-          value="₹14.8M" 
-          change="2.1" 
+          title="Active Employees" 
+          value={liveStats.employees} 
+          change="3.2" 
+          trend="up" 
+          icon={Users}
+          color="text-indigo-400"
+          isDarkMode={isDarkMode}
+        />
+        <StatCard 
+          title="Bench Strength" 
+          value={liveStats.bench} 
+          change="1.5" 
           trend="down" 
-          icon={TrendingDown}
-          color="text-rose-400"
+          icon={Briefcase}
+          color="text-amber-400"
           isDarkMode={isDarkMode}
         />
         <StatCard 
-          title="Resource Utilization" 
-          value="84.2%" 
-          change="5.6" 
+          title="Total Invoices" 
+          value={liveStats.invoices} 
+          change="8.9" 
           trend="up" 
-          icon={Activity}
+          icon={Receipt}
           color="text-emerald-400"
-          isDarkMode={isDarkMode}
-        />
-        <StatCard 
-          title="Project Success Rate" 
-          value="96.8%" 
-          change="0.4" 
-          trend="up" 
-          icon={ShieldCheck}
-          color="text-purple-400"
           isDarkMode={isDarkMode}
         />
       </div>
@@ -221,45 +246,75 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column: Module Insights */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Link to="/organization/company-setup" className="block group">
-            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-8 rounded-[2rem] hover:border-blue-500/50 transition-all duration-500 shadow-2xl">
-              <div className="flex items-center justify-between mb-8">
-                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform duration-500">
-                  <Building2 className="w-7 h-7" />
+            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-[2rem] hover:border-blue-500/50 transition-all duration-500 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform duration-500">
+                  <Building2 className="w-6 h-6" />
                 </div>
-                <div className="flex -space-x-3">
-                  {[1,2,3].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-xl border-4 border-slate-950 bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-400">
-                      HQ
-                    </div>
-                  ))}
-                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-400 transition-colors">Setup Active</span>
               </div>
-              <h3 className="text-xl font-black text-slate-100 mb-2 group-hover:text-blue-500 transition-colors">Organization</h3>
-              <p className="text-sm text-slate-500 font-bold leading-relaxed mb-6">Global entity configuration and departmental hierarchy mapping.</p>
-              <div className="flex items-center gap-2 text-xs font-black text-blue-500 uppercase tracking-widest">
-                Configure Setup
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              <h3 className="text-lg font-black text-slate-100 mb-1 group-hover:text-blue-500 transition-colors">Organization</h3>
+              <p className="text-xs text-slate-500 font-bold leading-relaxed mb-4 line-clamp-2">Entity configuration and departmental hierarchy mapping.</p>
+              <div className="flex items-center gap-2 text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                Configure
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-2 transition-transform" />
               </div>
             </div>
           </Link>
 
           <Link to="/employee-cost/list" className="block group">
-            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-8 rounded-[2rem] hover:border-emerald-500/50 transition-all duration-500 shadow-2xl">
-              <div className="flex items-center justify-between mb-8">
-                <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform duration-500">
-                  <Users className="w-7 h-7" />
+            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-[2rem] hover:border-emerald-500/50 transition-all duration-500 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform duration-500">
+                  <Users className="w-6 h-6" />
                 </div>
-                <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                  <span className="text-xs font-black text-emerald-500 uppercase tracking-tighter">+12 New</span>
+                <div className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                  <span className="text-[10px] font-black text-emerald-500 uppercase">{liveStats.employees} Resources</span>
                 </div>
               </div>
-              <h3 className="text-xl font-black text-slate-100 mb-2 group-hover:text-emerald-500 transition-colors">Employee Cost</h3>
-              <p className="text-sm text-slate-500 font-bold leading-relaxed mb-6">Granular cost breakdown and professional resource management.</p>
-              <div className="flex items-center gap-2 text-xs font-black text-emerald-500 uppercase tracking-widest">
-                Manage Resources
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              <h3 className="text-lg font-black text-slate-100 mb-1 group-hover:text-emerald-500 transition-colors">Employee Cost</h3>
+              <p className="text-xs text-slate-500 font-bold leading-relaxed mb-4 line-clamp-2">Granular cost breakdown and resource management.</p>
+              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                Manage
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/ai-prediction/margin-prediction" className="block group">
+            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-[2rem] hover:border-purple-500/50 transition-all duration-500 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform duration-500">
+                  <BrainCircuit className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-purple-400 transition-colors">AI Ready</span>
+              </div>
+              <h3 className="text-lg font-black text-slate-100 mb-1 group-hover:text-purple-500 transition-colors">AI Prediction</h3>
+              <p className="text-xs text-slate-500 font-bold leading-relaxed mb-4 line-clamp-2">Forecast future margins using deep learning models.</p>
+              <div className="flex items-center gap-2 text-[10px] font-black text-purple-500 uppercase tracking-widest">
+                Predict
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/invoicing/list" className="block group">
+            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-[2rem] hover:border-rose-500/50 transition-all duration-500 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform duration-500">
+                  <Receipt className="w-6 h-6" />
+                </div>
+                <div className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded-lg">
+                  <span className="text-[10px] font-black text-rose-500 uppercase">{liveStats.invoices} Active</span>
+                </div>
+              </div>
+              <h3 className="text-lg font-black text-slate-100 mb-1 group-hover:text-rose-500 transition-colors">Invoicing</h3>
+              <p className="text-xs text-slate-500 font-bold leading-relaxed mb-4 line-clamp-2">Automated client billing and payment tracking.</p>
+              <div className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest">
+                Track
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-2 transition-transform" />
               </div>
             </div>
           </Link>

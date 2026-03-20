@@ -113,9 +113,12 @@ const AvailabilityTracker = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-blue-400 hover:text-blue-300 font-bold text-xs flex items-center justify-end gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => alert(`Allocation request sent for ${res.name}.`)}
+                      className="text-blue-400 hover:text-blue-300 font-bold text-xs flex items-center justify-end gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-all active:scale-95"
+                    >
                       Request Allocation
-                      <ArrowRight className="w-3 h-3" />
+                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </td>
                 </tr>

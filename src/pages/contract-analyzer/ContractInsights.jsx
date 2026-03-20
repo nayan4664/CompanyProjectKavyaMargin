@@ -86,26 +86,36 @@ const ContractInsights = () => {
       {/* Detailed Insights List */}
       <div className="grid grid-cols-1 gap-6">
         {insights.map((insight) => (
-          <div key={insight.id} className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm hover:border-blue-500/30 transition-all group relative overflow-hidden">
-            <div className={`absolute top-0 left-0 w-1.5 h-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500`} />
+          <div 
+            key={insight.id} 
+            onClick={() => alert(`Showing full details for ${insight.title}...`)}
+            className={`bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm hover:border-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/50 hover:bg-slate-800/80 transition-all duration-300 group relative overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/5`}
+          >
+            <div className={`absolute top-0 left-0 w-1.5 h-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500 transition-all duration-300 group-hover:w-2`} />
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/10 text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/10 text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400 border border-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/20 group-hover:scale-105 transition-transform`}>
                     {insight.type}
                   </span>
-                  <span className="text-xs font-bold text-slate-500 italic">{insight.status}</span>
+                  <span className="text-xs font-bold text-slate-500 italic group-hover:text-slate-400 transition-colors">{insight.status}</span>
                 </div>
-                <h4 className="text-xl font-bold text-slate-100 mb-2">{insight.title}</h4>
-                <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                <h4 className={`text-xl font-bold text-slate-100 mb-2 group-hover:text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400 transition-colors`}>{insight.title}</h4>
+                <p className="text-sm text-slate-400 leading-relaxed font-medium group-hover:text-slate-300 transition-colors">
                   {insight.desc}
                 </p>
               </div>
               <div className="lg:w-64 shrink-0 flex flex-col justify-center items-start lg:items-end">
-                <p className={`text-lg font-black text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400`}>{insight.impact}</p>
-                <button className="mt-4 flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                <p className={`text-lg font-black text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400 group-hover:scale-110 transition-transform origin-right`}>{insight.impact}</p>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alert(`Viewing full clause for ${insight.title}`);
+                  }}
+                  className="mt-4 flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-all active:scale-95"
+                >
                   View Full Clause
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>

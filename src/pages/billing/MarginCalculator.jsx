@@ -90,8 +90,13 @@ const MarginCalculator = () => {
               <label className="text-sm font-bold text-slate-300">Hourly Billing Rate (₹)</label>
               <input 
                 type="number" 
+                min="0"
                 value={inputs.billingRate}
-                onChange={(e) => setFormData({ ...inputs, billingRate: Number(e.target.value) })}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setFormData({ ...inputs, billingRate: val });
+                }}
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
               />
             </div>
@@ -99,32 +104,59 @@ const MarginCalculator = () => {
               <label className="text-sm font-bold text-slate-300">Resource Hourly Cost (₹)</label>
               <input 
                 type="number" 
+                min="0"
                 value={inputs.resourceCost}
-                onChange={(e) => setFormData({ ...inputs, resourceCost: Number(e.target.value) })}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setFormData({ ...inputs, resourceCost: val });
+                }}
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Utilization (%)</label>
-              <input 
-                type="range" 
-                min="0" max="100"
-                value={inputs.utilization}
-                onChange={(e) => setFormData({ ...inputs, utilization: Number(e.target.value) })}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary-600" 
-              />
-              <div className="flex justify-between text-[10px] font-bold text-slate-500">
-                <span>0%</span>
-                <span className="text-primary-500">{inputs.utilization}%</span>
-                <span>100%</span>
+            <div className="space-y-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800">
+              <label className="text-sm font-bold text-slate-300 flex justify-between items-center">
+                <span className="flex items-center gap-2">
+                  Utilization (%)
+                </span>
+                <span className="px-2 py-1 bg-primary-500/10 text-primary-400 rounded-lg text-xs font-black border border-primary-500/20">
+                  {inputs.utilization}%
+                </span>
+              </label>
+              <div className="relative pt-2">
+                <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary-500 transition-all duration-300 shadow-[0_0_10px_rgba(14,165,233,0.5)]"
+                    style={{ width: `${inputs.utilization}%` }}
+                  />
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100"
+                  step="1"
+                  value={inputs.utilization}
+                  onChange={(e) => setFormData({ ...inputs, utilization: Number(e.target.value) })}
+                  className="relative z-10 w-full h-1.5 bg-transparent appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary-500 [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary-500 [&::-moz-range-thumb]:shadow-lg" 
+                />
+                <div className="flex justify-between text-[10px] font-black text-slate-500 mt-4 px-1 uppercase tracking-widest">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
               </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-300">Overhead % (SGA, etc.)</label>
               <input 
                 type="number" 
+                min="0"
                 value={inputs.overhead}
-                onChange={(e) => setFormData({ ...inputs, overhead: Number(e.target.value) })}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setFormData({ ...inputs, overhead: val });
+                }}
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
               />
             </div>

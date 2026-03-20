@@ -92,8 +92,13 @@ const BillingRateConfig = () => {
               <input 
                 type="number" 
                 required
+                min="0"
                 value={formData.offshore}
-                onChange={(e) => setFormData({...formData, offshore: Number(e.target.value)})}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setFormData({...formData, offshore: val});
+                }}
                 className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
@@ -102,8 +107,13 @@ const BillingRateConfig = () => {
               <input 
                 type="number" 
                 required
+                min="0"
                 value={formData.onshore}
-                onChange={(e) => setFormData({...formData, onshore: Number(e.target.value)})}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setFormData({...formData, onshore: val});
+                }}
                 className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>

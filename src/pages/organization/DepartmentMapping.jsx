@@ -86,7 +86,10 @@ const DepartmentMapping = () => {
                 placeholder="e.g. Quality Assurance"
                 value={newDept.name}
                 onChange={(e) => {
-                  setNewDept({ ...newDept, name: e.target.value });
+                  const value = e.target.value;
+                  // Only allow letters and spaces
+                  if (/[0-9]/.test(value)) return;
+                  setNewDept({ ...newDept, name: value });
                   if (errors.name) setErrors({ ...errors, name: '' });
                 }}
                 className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
@@ -100,7 +103,10 @@ const DepartmentMapping = () => {
                 placeholder="Manager Name"
                 value={newDept.head}
                 onChange={(e) => {
-                  setNewDept({ ...newDept, head: e.target.value });
+                  const value = e.target.value;
+                  // Only allow letters and spaces
+                  if (/[0-9]/.test(value)) return;
+                  setNewDept({ ...newDept, head: value });
                   if (errors.head) setErrors({ ...errors, head: '' });
                 }}
                 className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.head ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
@@ -113,9 +119,12 @@ const DepartmentMapping = () => {
                 <input 
                   type="number" 
                   placeholder="0"
+                  min="0"
                   value={newDept.staffCount}
                   onChange={(e) => {
-                    setNewDept({ ...newDept, staffCount: e.target.value });
+                    const value = e.target.value;
+                    if (value !== '' && Number(value) < 0) return;
+                    setNewDept({ ...newDept, staffCount: value });
                     if (errors.staffCount) setErrors({ ...errors, staffCount: '' });
                   }}
                   className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.staffCount ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
@@ -129,7 +138,9 @@ const DepartmentMapping = () => {
                   placeholder="₹0"
                   value={newDept.budget}
                   onChange={(e) => {
-                    setNewDept({ ...newDept, budget: e.target.value });
+                    const value = e.target.value;
+                    if (value.includes('-')) return;
+                    setNewDept({ ...newDept, budget: value });
                     if (errors.budget) setErrors({ ...errors, budget: '' });
                   }}
                   className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.budget ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 

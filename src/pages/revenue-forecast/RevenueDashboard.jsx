@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { TrendingUp, Download, Filter, FileSpreadsheet, IndianRupee, PieChart, BarChart3, Target } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { TrendingUp, Download, Filter, FileSpreadsheet, IndianRupee, PieChart, BarChart3, Target, ChevronDown, Check } from "lucide-react";
 
 import {
   ResponsiveContainer,
@@ -17,7 +17,7 @@ import {
   Cell
 } from "recharts";
 
-import { exportToCSV, exportToXML } from "../../utils/exportUtils";
+import { exportToCSV } from "../../utils/exportUtils";
 
 /* Revenue Data */
 
@@ -34,17 +34,32 @@ const revenueData = [
   { month: "Sep", year: 2024, confirmed: 3600000, weighted: 4200000, target: 4100000 },
 ];
 
+const ALL_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 const RevenueDashboard = () => {
 
-  const [selectedMonth, setSelectedMonth] = useState("All");
+  const [selectedMonths, setSelectedMonths] = useState(["All"]);
   const [selectedYear, setSelectedYear] = useState("All");
+  const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsMonthDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   /* FILTER DATA */
 
   const filteredData = revenueData.filter((item) => {
 
     const monthMatch =
-      selectedMonth === "All" || item.month === selectedMonth;
+      selectedMonths.includes("All") || selectedMonths.includes(item.month);
 
     const yearMatch =
       selectedYear === "All" || item.year === Number(selectedYear);
@@ -52,6 +67,21 @@ const RevenueDashboard = () => {
     return monthMatch && yearMatch;
 
   });
+
+  const toggleMonth = (month) => {
+    if (month === "All") {
+      setSelectedMonths(["All"]);
+    } else {
+      let newMonths = selectedMonths.filter(m => m !== "All");
+      if (newMonths.includes(month)) {
+        newMonths = newMonths.filter(m => m !== month);
+        if (newMonths.length === 0) newMonths = ["All"];
+      } else {
+        newMonths.push(month);
+      }
+      setSelectedMonths(newMonths);
+    }
+  };
 
   /* KPI CALCULATIONS */
 
@@ -108,50 +138,62 @@ const RevenueDashboard = () => {
             Export CSV
           </button>
 
-          <button
-            onClick={() => exportToXML(revenueData, 'Revenue_Forecast.xml', 'RevenueForecast')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
-          >
-            <Download className="w-4 h-4" />
-            Export XML
-          </button>
-
         </div>
 
       </header>
 
       {/* FILTERS */}
 
-      <div className="flex gap-4 items-center bg-slate-900 p-4 rounded-lg">
+      <div className="flex gap-4 items-center bg-slate-900 p-4 rounded-lg relative z-50">
 
         <Filter className="text-gray-400" />
 
-        {/* MONTH FILTER */}
+        {/* MONTH MULTI-SELECT FILTER */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
+            className="flex items-center gap-2 bg-slate-800 p-2 rounded text-sm text-slate-200 min-w-[140px] justify-between border border-slate-700 hover:bg-slate-700 transition-colors"
+          >
+            <span className="truncate">
+              {selectedMonths.includes("All") ? "All Months" : 
+               selectedMonths.length > 2 ? `${selectedMonths.length} Selected` : 
+               selectedMonths.join(", ")}
+            </span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isMonthDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
 
-        <select
-          className="bg-slate-800 p-2 rounded"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-        >
-          <option value="All">All Months</option>
-          <option>Jan</option>
-          <option>Feb</option>
-          <option>Mar</option>
-          <option>Apr</option>
-          <option>May</option>
-          <option>Jun</option>
-          <option>Jul</option>
-          <option>Aug</option>
-          <option>Sep</option>
-          <option>Oct</option>
-          <option>Nov</option>
-          <option>Dec</option>
-        </select>
+          {isMonthDropdownOpen && (
+            <div className="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 animate-in slide-in-from-top-2 duration-200">
+              <div
+                onClick={() => toggleMonth("All")}
+                className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
+              >
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedMonths.includes("All") ? 'bg-blue-600 border-blue-600' : 'border-slate-600'}`}>
+                  {selectedMonths.includes("All") && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <span className="text-sm font-medium text-slate-200">All Months</span>
+              </div>
+              <div className="h-px bg-slate-700 my-1 mx-2" />
+              {ALL_MONTHS.map((month) => (
+                <div
+                  key={month}
+                  onClick={() => toggleMonth(month)}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
+                >
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedMonths.includes(month) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'}`}>
+                    {selectedMonths.includes(month) && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                  <span className="text-sm font-medium text-slate-200">{month}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* YEAR FILTER */}
 
         <select
-          className="bg-slate-800 p-2 rounded"
+          className="bg-slate-800 p-2 rounded text-sm text-slate-200 border border-slate-700 hover:bg-slate-700 outline-none transition-colors"
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
         >
@@ -165,10 +207,10 @@ const RevenueDashboard = () => {
 
         <button
           onClick={() => {
-            setSelectedMonth("All");
+            setSelectedMonths(["All"]);
             setSelectedYear("All");
           }}
-          className="bg-gray-700 px-4 py-2 rounded"
+          className="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded text-sm font-bold text-slate-300 transition-colors border border-slate-700"
         >
           Reset
         </button>

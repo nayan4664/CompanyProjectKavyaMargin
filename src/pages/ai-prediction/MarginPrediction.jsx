@@ -191,14 +191,18 @@ const MarginPrediction = () => {
               { label: 'Currency Volatility', impact: '-0.3%', desc: 'Predicted INR-USD fluctuations' },
               { label: 'Bench Cost reduction', impact: '+0.5%', desc: 'Scheduled project ramp-ups' }
             ].map((driver, i) => (
-              <div key={i} className="p-4 bg-slate-800/50 rounded-xl border border-slate-700 group hover:border-blue-500/30 transition-colors">
+              <div 
+                key={i} 
+                onClick={() => alert(`Details for ${driver.label}: ${driver.desc}`)}
+                className="p-4 bg-slate-800/50 rounded-xl border border-slate-700 cursor-pointer group hover:border-blue-500/50 hover:bg-slate-800 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-200">{driver.label}</span>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${driver.impact.startsWith('+') ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'}`}>
+                  <span className="text-sm font-bold text-slate-200 group-hover:text-blue-400 transition-colors">{driver.label}</span>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full group-hover:scale-105 transition-transform ${driver.impact.startsWith('+') ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'}`}>
                     {driver.impact}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-2 font-medium">{driver.desc}</p>
+                <p className="text-xs text-slate-500 mt-2 font-medium group-hover:text-slate-400 transition-colors">{driver.desc}</p>
               </div>
             ))}
           </div>

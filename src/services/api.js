@@ -189,7 +189,11 @@ export const invoiceAPI = {
   create: async (data) => {
     await delay();
     const invoices = getStorageItem('mock_invoices', []);
-    const newItem = { ...data, id: Date.now().toString() };
+    const newItem = { 
+      ...data, 
+      _id: 'inv_' + Math.random().toString(36).substr(2, 9) + Date.now(),
+      id: 'inv_' + Math.random().toString(36).substr(2, 9) + Date.now()
+    };
     setStorageItem('mock_invoices', [...invoices, newItem]);
     return { data: newItem };
   }

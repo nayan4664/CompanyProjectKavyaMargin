@@ -14,11 +14,13 @@ import {
 import { exportToCSV } from '../../utils/exportUtils';
 
 const ScenarioSimulator = () => {
-  const [scenarios, setScenarios] = useState([
+  const initialScenarios = [
     { id: 1, name: 'Current Baseline', billingRate: 45, resources: 10, margin: 28 },
     { id: 2, name: 'High Efficiency', billingRate: 45, resources: 8, margin: 35 },
     { id: 3, name: 'Premium Billing', billingRate: 60, resources: 10, margin: 42 },
-  ]);
+  ];
+
+  const [scenarios, setScenarios] = useState(initialScenarios);
 
   const [simulation, setSimulation] = useState({
     name: 'New Scenario',
@@ -48,6 +50,8 @@ const ScenarioSimulator = () => {
       resources: 12,
       utilization: 85,
     });
+    setScenarios(initialScenarios);
+    alert('Simulation parameters and scenario list have been reset.');
   };
 
   return (
@@ -87,8 +91,13 @@ const ScenarioSimulator = () => {
               <label className="text-sm font-bold text-slate-300">Avg. Billing Rate ($)</label>
               <input 
                 type="number" 
+                min="0"
                 value={simulation.billingRate}
-                onChange={(e) => setSimulation({ ...simulation, billingRate: Number(e.target.value) })}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setSimulation({ ...simulation, billingRate: val });
+                }}
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
               />
             </div>
@@ -96,24 +105,53 @@ const ScenarioSimulator = () => {
               <label className="text-sm font-bold text-slate-300">Total Resources</label>
               <input 
                 type="number" 
+                min="0"
                 value={simulation.resources}
-                onChange={(e) => setSimulation({ ...simulation, resources: Number(e.target.value) })}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 0) return;
+                  setSimulation({ ...simulation, resources: val });
+                }}
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Utilization (%)</label>
-              <input 
-                type="range" 
-                min="0" max="100"
-                value={simulation.utilization}
-                onChange={(e) => setSimulation({ ...simulation, utilization: Number(e.target.value) })}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary-600" 
-              />
-              <div className="flex justify-between text-[10px] font-bold text-slate-500">
-                <span>0%</span>
-                <span className="text-primary-500">{simulation.utilization}%</span>
-                <span>100%</span>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-bold text-slate-300">Utilization (%)</label>
+                <span className="text-lg font-black text-primary-500 bg-primary-500/10 px-3 py-1 rounded-lg border border-primary-500/20 shadow-sm transition-all duration-300">
+                  {simulation.utilization}%
+                </span>
+              </div>
+              <div className="relative pt-2">
+                <input 
+                  type="range" 
+                  min="0" max="100"
+                  value={simulation.utilization}
+                  onChange={(e) => setSimulation({ ...simulation, utilization: Number(e.target.value) })}
+                  className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary-500 hover:accent-primary-400 transition-all border border-slate-700/50" 
+                />
+                <div className="flex justify-between mt-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest px-0.5">
+                  <span className="flex flex-col items-center gap-1">
+                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
+                    0%
+                  </span>
+                  <span className="flex flex-col items-center gap-1">
+                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
+                    25%
+                  </span>
+                  <span className="flex flex-col items-center gap-1">
+                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
+                    50%
+                  </span>
+                  <span className="flex flex-col items-center gap-1">
+                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
+                    75%
+                  </span>
+                  <span className="flex flex-col items-center gap-1">
+                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
+                    100%
+                  </span>
+                </div>
               </div>
             </div>
             <div className="pt-4 flex gap-3">

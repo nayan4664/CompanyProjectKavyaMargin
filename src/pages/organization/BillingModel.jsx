@@ -80,7 +80,10 @@ const BillingModel = () => {
                 placeholder="e.g. Hybrid Model"
                 value={newModel.name}
                 onChange={(e) => {
-                  setNewModel({ ...newModel, name: e.target.value });
+                  const value = e.target.value;
+                  // Only allow letters, spaces, and basic punctuation for model names (no numbers)
+                  if (/[0-9]/.test(value)) return;
+                  setNewModel({ ...newModel, name: value });
                   if (errors.name) setErrors({ ...errors, name: '' });
                 }}
                 className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
@@ -94,7 +97,10 @@ const BillingModel = () => {
                 placeholder="e.g. 30-35%"
                 value={newModel.margin}
                 onChange={(e) => {
-                  setNewModel({ ...newModel, margin: e.target.value });
+                  const value = e.target.value;
+                  // Only allow numbers, %, -, and spaces (no alphabets)
+                  if (/[a-zA-Z]/.test(value)) return;
+                  setNewModel({ ...newModel, margin: value });
                   if (errors.margin) setErrors({ ...errors, margin: '' });
                 }}
                 className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.margin ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 

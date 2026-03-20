@@ -85,13 +85,6 @@ const EmployeeCostList = () => {
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          <button 
-            onClick={() => exportToXML(employees, 'Employee_Costs.xml', 'Employees')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export XML
-          </button>
           {currentUser?.role !== 'Viewers' && (
             <Link 
               to="/employee-cost/add"

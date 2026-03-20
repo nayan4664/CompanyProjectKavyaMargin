@@ -86,7 +86,7 @@ const AddEmployeeCost = () => {
     const { name, value } = e.target;
     
     // Prevent negative values for financial fields
-    if ((name === 'ctc' || name === 'variablePay') && value < 0) return;
+    if ((name === 'ctc' || name === 'variablePay') && value !== '' && Number(value) < 0) return;
     
     // Validation for alphabetical fields: First Name, Last Name, and Role
     if (['firstName', 'lastName', 'role'].includes(name)) {

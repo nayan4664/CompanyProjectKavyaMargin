@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { exportToCSV, exportToXML } from '../../utils/exportUtils';
+import { exportToCSV } from '../../utils/exportUtils';
 import { dashboardAPI, invoiceAPI } from '../../services/api';
 
 const ProjectMarginDashboard = () => {
@@ -114,13 +114,6 @@ const ProjectMarginDashboard = () => {
           <p className="text-slate-400 mt-2 font-medium">Monitor real-time profitability across your entire project portfolio.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => exportToXML(projects, 'Project_Margins.xml', 'ProjectMargins')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export XML
-          </button>
           <button 
             onClick={() => exportToCSV(projects, 'Project_Margins.csv')}
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"

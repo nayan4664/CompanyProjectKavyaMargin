@@ -100,33 +100,32 @@ const ForecastReport = () => {
 
       {/* Header */}
 
-      <header className="flex justify-between items-center">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <FileText className="w-8 h-8 text-blue-500" />
+            Forecast Reports
+          </h1>
+          <p className="text-slate-400 mt-2 font-medium">Access and download generated financial and projection reports.</p>
+        </div>
 
-        <h1 className="text-3xl font-bold text-white flex gap-2">
-          <FileText /> Forecast Reports
-        </h1>
-
-        <div className="flex gap-3">
-
+        <div className="flex items-center gap-3">
           <button
-            onClick={() =>
-              exportToCSV(filteredReports, "ForecastReports.csv")
-            }
-            className="flex gap-2 bg-green-600 px-4 py-2 rounded-lg text-white"
+            onClick={() => exportToCSV(filteredReports, "ForecastReports.csv")}
+            className="flex items-center justify-center gap-2 bg-emerald-600/10 border border-emerald-500/50 px-4 py-2 rounded-xl text-emerald-400 text-sm font-bold hover:bg-emerald-600/20 transition-all"
           >
-            <Download size={16} /> CSV
+            <Download className="w-4 h-4" /> 
+            <span>CSV Export</span>
           </button>
 
           <button
             onClick={() => exportToCSV(reportData, "Forecast_Report.csv")}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
           >
             <Download className="w-4 h-4" />
-            Export CSV
+            <span>Export All</span>
           </button>
-
         </div>
-
       </header>
 
       {/* Stats Cards */}
@@ -151,99 +150,99 @@ const ForecastReport = () => {
       </div>
 
       {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          {/* Search */}
+          <div className="relative group">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-blue-500 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search reports..."
+              className="pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm focus:border-blue-500 outline-none transition-all text-slate-200 w-full md:w-64"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
-      <div className="flex gap-4">
+          {/* Category */}
+          <select
+            className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-sm text-slate-200 outline-none focus:border-blue-500 transition-all cursor-pointer"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option>All Categories</option>
+            <option>Financial</option>
+            <option>Forecast</option>
+            <option>Efficiency</option>
+            <option>Strategy</option>
+          </select>
 
-        {/* Search */}
-
-        <div className="relative">
-
-          <Search className="absolute left-2 top-2 text-gray-400" />
-
-          <input
-            type="text"
-            placeholder="Search reports"
-            className="pl-8 p-2 bg-slate-800 rounded text-white"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
+          {/* Financial Year Selector */}
+          <select
+            className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-sm text-slate-200 outline-none focus:border-blue-500 transition-all cursor-pointer"
+            value={financialYear}
+            onChange={(e) => setFinancialYear(e.target.value)}
+          >
+            <option value="All">All Financial Years</option>
+            <option value="FY 2025-2026">FY 2025-2026</option>
+            <option value="FY 2026-2027">FY 2026-2027</option>
+            <option value="FY 2027-2028">FY 2027-2028</option>
+          </select>
         </div>
-
-        {/* Category */}
-
-        <select
-          className="bg-slate-800 p-2 rounded text-white"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option>All</option>
-          <option>Financial</option>
-          <option>Forecast</option>
-          <option>Efficiency</option>
-          <option>Strategy</option>
-        </select>
-
-        {/* Financial Year Selector */}
-
-        <select
-          className="bg-slate-800 p-2 rounded text-white"
-          value={financialYear}
-          onChange={(e) => setFinancialYear(e.target.value)}
-        >
-          <option value="All">All Financial Years</option>
-          <option value="FY 2025-2026">FY 2025-2026</option>
-          <option value="FY 2026-2027">FY 2026-2027</option>
-          <option value="FY 2027-2028">FY 2027-2028</option>
-        </select>
-
+        
+        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+          Showing {filteredReports.length} Reports
+        </div>
       </div>
 
       {/* Report Cards */}
 
-      <div className="grid grid-cols-4 gap-6">
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredReports.map((report) => (
-
           <div
             key={report.id}
-            className="bg-slate-900 p-6 rounded-xl border border-slate-700 hover:border-blue-500 transition"
+            className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 hover:border-blue-500/50 transition-all group flex flex-col h-full shadow-sm"
           >
+            <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
+              <FileText className="w-5 h-5" />
+            </div>
 
-            <FileText className="text-blue-400 mb-4" />
-
-            <h4 className="text-white font-semibold">
+            <h4 className="text-slate-100 font-bold text-lg mb-1 leading-tight group-hover:text-blue-400 transition-colors">
               {report.name}
             </h4>
 
-            <p className="text-blue-400 text-xs">
+            <p className="text-blue-500 text-[10px] font-black uppercase tracking-widest mb-6">
               {report.type}
             </p>
 
-            <div className="text-xs text-gray-400 mt-4">
-
-              <p>Author: {report.author}</p>
-
-              <p>Date: {report.date}</p>
-
-              <p>FY: {getFinancialYear(report.date)}</p>
-
-              <p>Size: {report.size}</p>
-
+            <div className="space-y-2 mb-8 flex-grow">
+              <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
+                <span>Author:</span>
+                <span className="text-slate-300">{report.author}</span>
+              </div>
+              <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
+                <span>Date:</span>
+                <span className="text-slate-300">{report.date}</span>
+              </div>
+              <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
+                <span>FY:</span>
+                <span className="text-slate-300">{getFinancialYear(report.date)}</span>
+              </div>
+              <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
+                <span>Size:</span>
+                <span className="text-slate-300">{report.size}</span>
+              </div>
             </div>
 
             <button
               onClick={() => downloadReport(report)}
-              className="mt-4 w-full bg-blue-600 py-2.5 rounded-xl flex items-center justify-center gap-2 text-white font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+              className="w-full bg-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
             >
               <Download className="w-4 h-4" /> 
               <span>Download</span>
             </button>
-
           </div>
-
         ))}
-
       </div>
 
       {/* AI Insight */}

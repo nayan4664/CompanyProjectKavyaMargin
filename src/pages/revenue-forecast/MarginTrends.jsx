@@ -133,16 +133,6 @@ const MarginTrends = () => {
             Export Excel
           </button>
 
-          {/* CSV Export */}
-
-          <button
-            onClick={() => exportToCSV(trendData, "MarginTrends.csv")}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-
         </div>
 
       </header>

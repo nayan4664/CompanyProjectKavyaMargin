@@ -155,8 +155,8 @@ const ForecastInsights = () => {
                   }} 
                 />
                 <Legend iconType="circle" verticalAlign="top" height={36}/>
-                <Bar dataKey="revenue" fill="#0ea5e9" radius={[4, 4, 0, 0]} name="Proj. Revenue" />
-                <Bar dataKey="cost" fill="#1e293b" radius={[4, 4, 0, 0]} name="Proj. Cost" />
+                <Bar dataKey="revenue" fill="#6366f1" radius={[4, 4, 0, 0]} name="Proj. Revenue" />
+                <Bar dataKey="cost" fill="#f43f5e" radius={[4, 4, 0, 0]} name="Proj. Cost" />
                 <Line type="monotone" dataKey="target" stroke="#f59e0b" strokeWidth={3} dot={{r: 4}} name="Target Revenue" />
               </ComposedChart>
             </ResponsiveContainer>
@@ -171,17 +171,21 @@ const ForecastInsights = () => {
           </div>
           <div className="space-y-4">
             {recommendations.map((rec, i) => (
-              <div key={i} className="p-5 border border-slate-800 rounded-2xl bg-slate-800/50 hover:bg-slate-800 transition-all cursor-pointer group">
+              <div 
+                key={i} 
+                onClick={() => alert(`Recommendation: ${rec.title}\n\n${rec.desc}`)}
+                className="p-5 border border-slate-800 rounded-2xl bg-slate-800/50 hover:bg-slate-900 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 cursor-pointer group active:scale-[0.98]"
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-slate-900 rounded-lg shadow-sm border border-slate-800">
-                    <TrendingUp className="w-4 h-4 text-blue-400" />
+                  <div className="p-2 bg-slate-900 rounded-lg shadow-sm border border-slate-800 group-hover:bg-blue-600/10 group-hover:border-blue-500/30 transition-all">
+                    <TrendingUp className="w-4 h-4 text-blue-400 group-hover:text-blue-500 transition-colors" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{rec.impact}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 group-hover:text-blue-500 transition-colors">{rec.impact}</span>
                 </div>
                 <h4 className="text-sm font-bold text-slate-200 group-hover:text-blue-400 transition-colors">{rec.title}</h4>
-                <p className="text-[11px] text-slate-500 mt-2 font-medium leading-relaxed">{rec.desc}</p>
-                <div className="mt-4 flex items-center gap-1 text-[11px] font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Learn more
+                <p className="text-[11px] text-slate-500 mt-2 font-medium leading-relaxed group-hover:text-slate-400 transition-colors">{rec.desc}</p>
+                <div className="mt-4 flex items-center gap-1 text-[11px] font-bold text-blue-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                  Apply Action
                   <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
