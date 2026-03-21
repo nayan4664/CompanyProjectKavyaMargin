@@ -24,12 +24,14 @@ const BillingModel = () => {
 
     if (!newModel.margin.trim()) {
       newErrors.margin = 'Target Margin is required';
-    } else if (!/^[\d\s\-%]+$/.test(newModel.margin) || !/\d/.test(newModel.margin)) {
-      newErrors.margin = 'Accepts numeric percentage values only (e.g., 10%, 20-30)';
+    } else if (!/^[\d\s%]+$/.test(newModel.margin) || !/\d/.test(newModel.margin)) {
+      newErrors.margin = 'Accepts numeric percentage values only (e.g., 10%, 20)';
     }
 
     if (!newModel.description.trim()) {
       newErrors.description = 'Description is required';
+    } else if (/^\d+$/.test(newModel.description.trim())) {
+      newErrors.description = 'Description should contain letters, not just numbers';
     }
 
     setErrors(newErrors);
@@ -94,12 +96,12 @@ const BillingModel = () => {
               <label className="text-sm font-bold text-slate-300 ml-1">Target Margin (%)</label>
               <input 
                 type="text" 
-                placeholder="e.g. 30-35%"
+                placeholder="e.g. 30%"
                 value={newModel.margin}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Only allow numbers, %, -, and spaces (no alphabets)
-                  if (/[a-zA-Z]/.test(value)) return;
+                  // Only allow numbers, %, and spaces (no alphabets or negative sign)
+                  if (/[a-zA-Z-]/.test(value)) return;
                   setNewModel({ ...newModel, margin: value });
                   if (errors.margin) setErrors({ ...errors, margin: '' });
                 }}

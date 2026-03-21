@@ -164,6 +164,11 @@ const GenerateInvoice = () => {
   };
 
   const updateItem = (id, field, value) => {
+    // Prevent negative numbers for hours and rate
+    if ((field === 'hours' || field === 'rate') && value < 0) {
+      value = 0;
+    }
+
     const newItems = formData.items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
@@ -304,6 +309,7 @@ const GenerateInvoice = () => {
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Hours</label>
                       <input 
                         type="number" 
+                        min="0"
                         value={item.hours}
                         onChange={e => updateItem(item.id, 'hours', Number(e.target.value))}
                         className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200" 
@@ -313,6 +319,7 @@ const GenerateInvoice = () => {
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Rate ($)</label>
                       <input 
                         type="number" 
+                        min="0"
                         value={item.rate}
                         onChange={e => updateItem(item.id, 'rate', Number(e.target.value))}
                         className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200" 
