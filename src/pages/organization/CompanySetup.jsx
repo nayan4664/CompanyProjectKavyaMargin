@@ -41,7 +41,15 @@ const CompanySetup = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'companyName') {
+      // Only allow letters and spaces
+      const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -52,14 +60,14 @@ const CompanySetup = () => {
     
     if (!formData.companyName.trim()) {
       newErrors.companyName = 'Company Name is required';
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.companyName)) {
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.companyName.trim())) {
       newErrors.companyName = 'Company Name should contain only alphabetic characters';
     }
 
     if (!formData.registrationNumber.trim()) {
       newErrors.registrationNumber = 'Registration Number is required';
-    } else if (!/^[A-Z0-9-]+$/i.test(formData.registrationNumber)) {
-      newErrors.registrationNumber = 'Invalid format. Use alphanumeric characters and hyphens only';
+    } else if (!/^[A-Z]{2}\d{5}[A-Z]{2}$/i.test(formData.registrationNumber.trim())) {
+      newErrors.registrationNumber = 'Invalid format. Expected format: AA12345BB';
     }
 
     if (!formData.website.trim()) {

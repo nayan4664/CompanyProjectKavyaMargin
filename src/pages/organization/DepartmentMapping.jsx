@@ -34,8 +34,11 @@ const DepartmentMapping = () => {
 
     if (!newDept.budget.trim()) {
       newErrors.budget = 'Budget is required';
-    } else if (newDept.budget.includes('-')) {
-      newErrors.budget = 'Budget cannot be negative';
+    } else {
+      const budgetValue = newDept.budget.replace('₹', '').trim();
+      if (!/^\d+(\.\d{1,2})?[LKM]?$/i.test(budgetValue)) {
+        newErrors.budget = 'Invalid format (e.g. 50000, 12M)';
+      }
     }
 
     setErrors(newErrors);
@@ -46,7 +49,13 @@ const DepartmentMapping = () => {
     e.preventDefault();
     if (!validateForm()) return;
     
-    setDepartments([...departments, { ...newDept, id: Date.now() }]);
+    // Format budget to ensure it has ₹ prefix
+    let formattedBudget = newDept.budget.trim();
+    if (!formattedBudget.startsWith('₹')) {
+      formattedBudget = `₹${formattedBudget}`;
+    }
+    
+    setDepartments([...departments, { ...newDept, budget: formattedBudget, id: Date.now() }]);
     setNewDept({ name: '', head: '', staffCount: '', budget: '' });
     setErrors({});
   };
@@ -131,20 +140,25 @@ const DepartmentMapping = () => {
                 />
                 {errors.staffCount && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.staffCount}</p>}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label className="text-sm font-bold text-slate-300 ml-1">Budget</label>
-                <input 
-                  type="text" 
-                  placeholder="₹0"
-                  value={newDept.budget}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value.includes('-')) return;
-                    setNewDept({ ...newDept, budget: value });
-                    if (errors.budget) setErrors({ ...errors, budget: '' });
-                  }}
-                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.budget ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
-                />
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₹</span>
+                  <input 
+                    type="text" 
+                    placeholder="0"
+                    value={newDept.budget.replace('₹', '')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.includes('-')) return;
+                      // Only allow numbers and decimal
+                      const cleanValue = value.replace(/[^0-9.]/g, '');
+                      setNewDept({ ...newDept, budget: cleanValue });
+                      if (errors.budget) setErrors({ ...errors, budget: '' });
+                    }}
+                    className={`w-full pl-8 pr-4 py-2.5 bg-slate-800/50 border ${errors.budget ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                  />
+                </div>
                 {errors.budget && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.budget}</p>}
               </div>
             </div>

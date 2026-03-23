@@ -36,8 +36,18 @@ const initialSuggestions = [
 
 const ReallocationSuggestions = () => {
   const [suggestions, setSuggestions] = useState(initialSuggestions);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
 
   const handleApprove = (id) => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot approve reallocations.');
+      return;
+    }
     const suggestion = suggestions.find(s => s.id === id);
     if (window.confirm(`Are you sure you want to approve reallocation for ${suggestion.resource} to ${suggestion.suggestedProject}?`)) {
       setSuggestions(suggestions.filter(s => s.id !== id));

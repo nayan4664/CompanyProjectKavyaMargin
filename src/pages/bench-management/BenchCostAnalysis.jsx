@@ -24,6 +24,21 @@ const benchCostTrend = [
 ];
 
 const BenchCostAnalysis = () => {
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
+    exportToCSV(benchCostTrend, 'Bench_Cost_Analysis.csv');
+  };
+
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
@@ -37,7 +52,7 @@ const BenchCostAnalysis = () => {
           <p className="text-slate-400 mt-2 font-medium">Financial impact assessment of unallocated resources on organizational margins.</p>
         </div>
         <button 
-          onClick={() => exportToCSV(benchCostTrend, 'Bench_Cost_Analysis.csv')}
+          onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />

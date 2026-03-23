@@ -142,13 +142,6 @@ const AddEmployeeCost = () => {
       } else {
         await employeeAPI.create(employeeData);
       }
-      
-      // Update localStorage for redundancy
-      const existing = JSON.parse(localStorage.getItem('mock_employees')) || [];
-      const updated = isEditMode 
-        ? existing.map(emp => (emp._id === id || emp.id === id) ? { ...emp, ...employeeData } : emp)
-        : [{ ...employeeData, id: Date.now().toString() }, ...existing];
-      localStorage.setItem('mock_employees', JSON.stringify(updated));
 
       alert(isEditMode ? 'Employee cost data updated successfully!' : 'Employee cost data added successfully!');
       navigate('/employee-cost/list');

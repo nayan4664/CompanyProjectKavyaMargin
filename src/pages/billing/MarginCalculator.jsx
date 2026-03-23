@@ -4,6 +4,21 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { exportToCSV } from '../../utils/exportUtils';
 
 const MarginCalculator = () => {
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
+    exportToCSV([inputs], 'Margin_Calculation.csv');
+  };
+
   const [inputs, setFormData] = useState({
     billingRate: 45,
     resourceCost: 18,
@@ -69,7 +84,7 @@ const MarginCalculator = () => {
           <p className="text-slate-400 mt-2 font-medium">Quickly calculate project margins based on billing rates and resource costs.</p>
         </div>
         <button 
-          onClick={() => exportToCSV([{ ...inputs, ...results }], 'Margin_Calculation.csv')}
+          onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
@@ -123,13 +138,15 @@ const MarginCalculator = () => {
                   {inputs.utilization}%
                 </span>
               </label>
-              <div className="relative pt-2">
-                <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div className="relative pt-4 pb-2">
+                {/* Background track */}
+                <div className="absolute top-[22px] left-0 w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary-500 transition-all duration-300 shadow-[0_0_10px_rgba(14,165,233,0.5)]"
                     style={{ width: `${inputs.utilization}%` }}
                   />
                 </div>
+                {/* Range input overlay */}
                 <input 
                   type="range" 
                   min="0" 
@@ -137,7 +154,7 @@ const MarginCalculator = () => {
                   step="1"
                   value={inputs.utilization}
                   onChange={(e) => setFormData({ ...inputs, utilization: Number(e.target.value) })}
-                  className="relative z-10 w-full h-1.5 bg-transparent appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary-500 [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary-500 [&::-moz-range-thumb]:shadow-lg" 
+                  className="relative z-10 w-full h-1.5 bg-transparent appearance-none cursor-pointer block [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary-500 [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary-500 [&::-moz-range-thumb]:shadow-lg" 
                 />
                 <div className="flex justify-between text-[10px] font-black text-slate-500 mt-4 px-1 uppercase tracking-widest">
                   <span>0%</span>

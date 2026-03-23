@@ -202,8 +202,8 @@ const Sidebar = ({ isOpen, onClose }) => {
       )}
 
       <aside className={cn(
-        "fixed inset-y-0 left-0 w-64 h-screen flex flex-col z-40 transition-all duration-300 lg:sticky lg:top-0 lg:translate-x-0 border-r bg-slate-950 border-slate-800",
-        isOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 w-[280px] sm:w-64 h-screen flex flex-col z-40 transition-all duration-300 lg:sticky lg:top-0 lg:translate-x-0 border-r bg-slate-950 border-slate-800",
+        isOpen ? "translate-x-0 shadow-2xl shadow-black" : "-translate-x-full"
       )}>
         <div className="p-6 border-b flex items-center justify-between border-slate-800">
           <h1 className="text-xl font-black text-blue-500 tracking-tight flex items-center gap-2">

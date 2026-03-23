@@ -36,9 +36,21 @@ const Register = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'contactNo') {
-      const cleanedValue = value.replace(/\D/g, '').slice(0, 10);
-      setFormData({ ...formData, [name]: cleanedValue });
+    if (name === 'fullName') {
+      // Allow only letters and spaces
+      const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
+      setFormData({ ...formData, [name]: filteredValue });
+    } else if (name === 'contactNo') {
+      // Enforce +91 prefix and only digits
+      let val = value;
+      if (!val.startsWith('+91')) {
+        const digits = val.replace(/\D/g, '');
+        val = digits ? '+91' + digits : '+91';
+      } else {
+        const digits = val.slice(3).replace(/\D/g, '');
+        val = '+91' + digits;
+      }
+      setFormData({ ...formData, [name]: val.slice(0, 13) });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -51,22 +63,26 @@ const Register = () => {
     e.preventDefault();
     const newErrors = {};
 
+    // Basic Required check
     Object.keys(formData).forEach(key => {
-      if (!formData[key]) {
+      if (!formData[key] || !formData[key].toString().trim()) {
         newErrors[key] = 'Required';
       }
     });
 
+    // Full Name Validation
     if (formData.fullName && !/^[a-zA-Z\s]+$/.test(formData.fullName)) {
       newErrors.fullName = 'Full Name should accept only alphabetic characters';
     }
 
-    if (formData.contactNo && formData.contactNo.length !== 10) {
-      newErrors.contactNo = 'Contact number must be exactly 10 digits';
+    // Contact Number Validation
+    if (formData.contactNo && !/^\+91\d{10}$/.test(formData.contactNo)) {
+      newErrors.contactNo = 'Contact number should start with +91 followed by a valid 10 digit mobile number';
     }
 
-    if (formData.address && formData.address.length < 5) {
-      newErrors.address = 'Please provide a valid office location';
+    // Office Location Validation
+    if (formData.address && !/^[a-zA-Z0-9\s,.-]{5,}$/.test(formData.address.trim())) {
+      newErrors.address = 'Office location should be in valid text format (min 5 characters)';
     }
 
     if (formData.userRole && formData.email) {

@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/sidebar/Sidebar';
 import Navbar from '../components/navbar/Navbar';
 import { useTheme } from '../context/ThemeContext';
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { pathname } = useLocation();
+  const mainRef = React.useRef(null);
+
+  // Scroll to top whenever pathname changes
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0);
+    }
+  }, [pathname]);
 
   return (
     <div className="flex min-h-screen transition-colors duration-300 bg-slate-950">
@@ -16,8 +26,11 @@ const DashboardLayout = ({ children }) => {
         <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
 
         {/* Content area scrolling independently */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
-          <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <main 
+          ref={mainRef}
+          className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 w-full"
+        >
+          <div className="max-w-full lg:max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>
         </main>

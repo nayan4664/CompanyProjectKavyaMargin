@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TrendingUp, Download } from "lucide-react";
 import {
-  AreaChart,
+  ResponsiveContainer,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Line,
   Legend,
 } from "recharts";
 
@@ -34,6 +34,12 @@ const allData = [
 const MarginTrends = () => {
 
   const [filter, setFilter] = useState("all");
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
 
   const getFilteredData = () => {
 
@@ -78,6 +84,10 @@ const MarginTrends = () => {
 
   // Excel Export
   const exportExcel = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
 
     const worksheet = XLSX.utils.json_to_sheet(trendData);
 
@@ -133,6 +143,22 @@ const MarginTrends = () => {
             Export Excel
           </button>
 
+          {/* CSV Export */}
+
+          <button
+            onClick={() => {
+              if (currentUser?.role === 'Team Lead') {
+                alert('Unauthorized: Team Leads cannot download reports.');
+                return;
+              }
+              exportToCSV(trendData, "MarginTrends.csv");
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+
         </div>
 
       </header>
@@ -185,7 +211,7 @@ const MarginTrends = () => {
 
         <ResponsiveContainer width="100%" height={350}>
 
-          <AreaChart data={trendData}>
+          <ComposedChart data={trendData}>
 
             <CartesianGrid strokeDasharray="3 3" />
 
@@ -218,7 +244,7 @@ const MarginTrends = () => {
               strokeWidth={2}
             />
 
-          </AreaChart>
+          </ComposedChart>
 
         </ResponsiveContainer>
 

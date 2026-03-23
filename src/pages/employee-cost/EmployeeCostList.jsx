@@ -36,16 +36,16 @@ const EmployeeCostList = () => {
   };
 
   const deleteEmployee = async (id) => {
-    if (window.confirm('Are you sure you want to delete this employee?')) {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers') {
+      alert('Unauthorized: You do not have permission to delete records.');
+      return;
+    }
+    if (window.confirm('Are you sure you want to delete this resource?')) {
       try {
         await employeeAPI.delete(id);
-        setEmployees(employees.filter(emp => emp._id !== id && emp.id !== id));
-        // Also update localStorage for consistency
-        const stored = JSON.parse(localStorage.getItem('mock_employees')) || [];
-        localStorage.setItem('mock_employees', JSON.stringify(stored.filter(e => e.id !== id)));
-      } catch (error) {
-        console.error('Failed to delete employee:', error);
-        alert('Failed to delete employee');
+        fetchEmployees();
+      } catch (err) {
+        alert("Error deleting employee");
       }
     }
   };
@@ -67,25 +67,33 @@ const EmployeeCostList = () => {
       maximumFractionDigits: 0 
     }).format(val);
 
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
+    exportToCSV(employees, 'Employee_Cost_Report.csv');
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500" id="employee-list-content">
+    <div className="space-y-8 animate-in fade-in duration-500" id="employee-cost-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
             <Users className="w-8 h-8 text-blue-500" />
-            Employee Cost List
+            Employee Directory
           </h1>
-          <p className="text-slate-400 mt-2 font-medium">Detailed breakdown of employee compensation and organizational costs.</p>
+          <p className="text-slate-400 mt-2 font-medium">Manage resource costs, allocation, and professional profiles.</p>
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => exportToCSV(employees, 'Employee_Costs.csv')}
+            onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
           >
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          {currentUser?.role !== 'Viewers' && (
+          {currentUser?.role !== 'Viewers' && currentUser?.role !== 'Team Lead' && (
             <Link 
               to="/employee-cost/add"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
@@ -151,7 +159,6 @@ const EmployeeCostList = () => {
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Department</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Annual CTC</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Monthly Cost</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Status</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Actions</th>
               </tr>
             </thead>
@@ -178,18 +185,17 @@ const EmployeeCostList = () => {
                   <td className="px-6 py-4">
                     <span className="text-sm font-bold text-slate-100">{formatCurrency(emp.monthlyCost)}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                      emp.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-                    }`}>
-                      {emp.status}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 text-right">
                     {currentUser?.role !== 'Viewers' && (
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Link 
                           to={`/employee-cost/edit/${emp._id || emp.id}`}
+                          onClick={(e) => {
+                            if (currentUser?.role === 'Team Lead') {
+                              e.preventDefault();
+                              alert('Unauthorized: Team Leads cannot edit records.');
+                            }
+                          }}
                           className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -199,9 +205,6 @@ const EmployeeCostList = () => {
                           className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-all">
-                          <MoreVertical className="w-4 h-4" />
                         </button>
                       </div>
                     )}

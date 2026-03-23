@@ -12,6 +12,20 @@ const availabilityData = [
 
 const AvailabilityTracker = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
+    exportToCSV(availabilityData, 'Resource_Availability.csv');
+  };
 
   const filteredAvailability = availabilityData.filter(res => 
     res.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,7 +43,7 @@ const AvailabilityTracker = () => {
           <p className="text-slate-400 mt-2 font-medium">Monitor upcoming roll-offs and resource availability for future planning.</p>
         </div>
         <button 
-          onClick={() => exportToCSV(availabilityData, 'Resource_Availability.csv')}
+          onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
@@ -113,12 +127,9 @@ const AvailabilityTracker = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => alert(`Allocation request sent for ${res.name}.`)}
-                      className="text-blue-400 hover:text-blue-300 font-bold text-xs flex items-center justify-end gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-all active:scale-95"
-                    >
+                    <button className="text-blue-400 hover:text-blue-300 font-bold text-xs flex items-center justify-end gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
                       Request Allocation
-                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-3 h-3" />
                     </button>
                   </td>
                 </tr>

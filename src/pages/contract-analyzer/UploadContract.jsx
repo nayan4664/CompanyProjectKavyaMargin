@@ -6,17 +6,10 @@ const UploadContract = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState(() => {
-    const saved = sessionStorage.getItem('uploadedContracts');
-    return saved ? JSON.parse(saved) : [
-      { name: 'Service_Agreement_TechCorp.pdf', size: '2.4 MB', status: 'Analyzed', date: '2026-03-01' },
-      { name: 'SLA_Cloud_Migration.docx', size: '1.1 MB', status: 'Processing', date: '2026-03-05' },
-    ];
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem('uploadedContracts', JSON.stringify(uploadedFiles));
-  }, [uploadedFiles]);
+  const [uploadedFiles, setUploadedFiles] = useState([
+    { name: 'Service_Agreement_TechCorp.pdf', size: '2.4 MB', status: 'Analyzed', date: '2026-03-01' },
+    { name: 'SLA_Cloud_Migration.docx', size: '1.1 MB', status: 'Processing', date: '2026-03-05' },
+  ]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -106,27 +99,17 @@ const UploadContract = () => {
           <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-slate-800 flex justify-between items-center">
               <h4 className="font-bold text-slate-100">Recent Uploads</h4>
-              <button 
-                onClick={() => navigate('/contract-analyzer/insights')}
-                className="text-xs font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest transition-colors flex items-center gap-2 group"
-              >
-                View All
-                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <button className="text-xs font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest transition-colors">View All</button>
             </div>
             <div className="divide-y divide-slate-800">
               {uploadedFiles.map((file, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => alert(`Opening ${file.name} details...`)}
-                  className="p-4 flex items-center justify-between hover:bg-slate-800 transition-all cursor-pointer group"
-                >
+                <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="p-2 bg-slate-800 rounded-lg group-hover:bg-slate-700 transition-colors">
-                      <FileText className="w-5 h-5 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                    <div className="p-2 bg-slate-800 rounded-lg">
+                      <FileText className="w-5 h-5 text-slate-500" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-100 group-hover:text-blue-400 transition-colors">{file.name}</p>
+                      <p className="text-sm font-bold text-slate-100">{file.name}</p>
                       <p className="text-[10px] text-slate-500 font-medium">{file.size} • {file.date}</p>
                     </div>
                   </div>
@@ -137,16 +120,7 @@ const UploadContract = () => {
                       {file.status}
                     </span>
                     {file.status === 'Analyzed' && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          alert(`Navigating to insights for ${file.name}`);
-                        }}
-                        className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-all flex items-center gap-1 active:scale-95"
-                      >
-                        View Insights
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                      </button>
+                      <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">View Insights</button>
                     )}
                   </div>
                 </div>

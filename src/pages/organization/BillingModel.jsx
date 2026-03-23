@@ -12,6 +12,20 @@ const BillingModel = () => {
 
   const [newModel, setNewModel] = useState({ name: '', description: '', margin: '' });
   const [errors, setErrors] = useState({});
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
+    exportToCSV(models, 'Billing_Models.csv');
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -24,14 +38,12 @@ const BillingModel = () => {
 
     if (!newModel.margin.trim()) {
       newErrors.margin = 'Target Margin is required';
-    } else if (!/^[\d\s%]+$/.test(newModel.margin) || !/\d/.test(newModel.margin)) {
-      newErrors.margin = 'Accepts numeric percentage values only (e.g., 10%, 20)';
+    } else if (!/^[\d\s\-%]+$/.test(newModel.margin) || !/\d/.test(newModel.margin)) {
+      newErrors.margin = 'Accepts numeric percentage values only (e.g., 10%, 20-30)';
     }
 
     if (!newModel.description.trim()) {
       newErrors.description = 'Description is required';
-    } else if (/^\d+$/.test(newModel.description.trim())) {
-      newErrors.description = 'Description should contain letters, not just numbers';
     }
 
     setErrors(newErrors);
@@ -62,7 +74,7 @@ const BillingModel = () => {
           <p className="text-slate-400 mt-2 font-medium">Configure and manage various billing structures for your projects.</p>
         </div>
         <button 
-          onClick={() => exportToCSV(models, 'Billing_Models.csv')}
+          onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
         >
           <Download className="w-4 h-4" />
@@ -96,12 +108,12 @@ const BillingModel = () => {
               <label className="text-sm font-bold text-slate-300 ml-1">Target Margin (%)</label>
               <input 
                 type="text" 
-                placeholder="e.g. 30%"
+                placeholder="e.g. 30-35%"
                 value={newModel.margin}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Only allow numbers, %, and spaces (no alphabets or negative sign)
-                  if (/[a-zA-Z-]/.test(value)) return;
+                  // Only allow numbers, %, -, and spaces (no alphabets)
+                  if (/[a-zA-Z]/.test(value)) return;
                   setNewModel({ ...newModel, margin: value });
                   if (errors.margin) setErrors({ ...errors, margin: '' });
                 }}

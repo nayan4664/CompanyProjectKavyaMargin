@@ -7,15 +7,16 @@ import {
   Filter,
   ArrowRight,
   Info,
-  BrainCircuit
+  BrainCircuit,
+  Clock,
+  Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ScatterChart, 
-  Scatter, 
+  BarChart, 
+  Bar, 
   XAxis, 
   YAxis, 
-  ZAxis, 
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
@@ -23,218 +24,203 @@ import {
 } from 'recharts';
 
 const initialRiskData = [
-  { name: 'Project Alpha', impact: 8, probability: 70, score: 5.6, color: '#ef4444' },
-  { name: 'Resource Bench', impact: 9, probability: 40, score: 3.6, color: '#f59e0b' },
-  { name: 'Project Beta', impact: 4, probability: 20, score: 0.8, color: '#10b981' },
-  { name: 'Global Billing', impact: 6, probability: 60, score: 3.6, color: '#f59e0b' },
-  { name: 'Project Gamma', impact: 2, probability: 10, score: 0.2, color: '#10b981' },
-  { name: 'Offshore Ramp-up', impact: 7, probability: 80, score: 5.6, color: '#ef4444' },
+  { id: 1, name: 'Project Alpha Margin Leakage', impact: 'High', probability: '70%', score: 85, category: 'Financial', action: 'Shift 2 FTEs to Offshore' },
+  { id: 2, name: 'Resource Bench Duration', impact: 'Medium', probability: '40%', score: 45, category: 'Resource', action: 'Internal Skill Upskilling' },
+  { id: 3, name: 'Delayed Invoice Payment', impact: 'High', probability: '60%', score: 72, category: 'Financial', action: 'Automate Reminders' },
+  { id: 4, name: 'Offshore Ramp-up Delay', impact: 'Medium', probability: '80%', score: 64, category: 'Operations', action: 'Accelerate Hiring' },
+  { id: 5, name: 'Contract SLA Breach', impact: 'Low', probability: '20%', score: 18, category: 'Legal', action: 'Review Clause 4.2' },
+  { id: 6, name: 'Utilization Efficiency Drop', impact: 'Medium', probability: '50%', score: 52, category: 'Resource', action: 'Reassign from Bench' },
 ];
 
 const RiskAnalysis = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [riskData, setRiskData] = useState(initialRiskData);
-  const [showFilters, setShowFilters] = useState(false);
+  const [riskData] = useState(initialRiskData);
   const [filterLevel, setFilterLevel] = useState('All');
 
   const filteredRisks = riskData.filter(r => {
-    const matchesSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = filterLevel === 'All' || 
-      (filterLevel === 'High' && r.impact >= 7) ||
-      (filterLevel === 'Medium' && r.impact >= 4 && r.impact < 7) ||
-      (filterLevel === 'Low' && r.impact < 4);
+    const matchesSearch = !searchTerm || r.name.toLowerCase().includes(searchTerm.toLowerCase().trim());
+    const matchesLevel = filterLevel === 'All' || r.impact === filterLevel;
     return matchesSearch && matchesLevel;
   });
 
-  const handleActionClick = (item) => {
-    if (item.title === 'Bench Utilization' || item.title === 'Resource Allocation') {
-      navigate('/bench-management/reallocation-suggestions');
-    } else {
-      alert(`Mitigation action "${item.action}" for "${item.title}" has been initiated.`);
+  const getRiskColor = (impact) => {
+    switch (impact) {
+      case 'High': return 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+      case 'Medium': return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+      case 'Low': return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
+      default: return 'text-slate-500 bg-slate-500/10 border-slate-500/20';
     }
   };
 
+  const chartData = [
+    { name: 'High', count: riskData.filter(r => r.impact === 'High').length, color: '#ef4444' },
+    { name: 'Medium', count: riskData.filter(r => r.impact === 'Medium').length, color: '#f59e0b' },
+    { name: 'Low', count: riskData.filter(r => r.impact === 'Low').length, color: '#10b981' },
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <ShieldAlert className="w-8 h-8 text-rose-500" />
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
+            <ShieldAlert className="w-8 h-8 md:w-10 md:h-10 text-rose-500" />
             Risk Analysis
           </h1>
-          <p className="text-slate-400 mt-2 font-medium">Identify and mitigate potential margin and resource risks.</p>
+          <p className="text-slate-400 mt-2 font-bold tracking-wide">AI-identified risks and automated mitigation strategies.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input 
               type="text" 
               placeholder="Search risks..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-200" 
+              className="w-full pl-12 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
             />
           </div>
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
-              showFilters ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-            }`}
+          <select 
+            value={filterLevel}
+            onChange={(e) => setFilterLevel(e.target.value)}
+            className="px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 outline-none focus:border-blue-500/50 transition-colors"
           >
-            <Filter className="w-4 h-4" />
-            Filters
-          </button>
+            <option value="All">All Impact Levels</option>
+            <option value="High">High Impact</option>
+            <option value="Medium">Medium Impact</option>
+            <option value="Low">Low Impact</option>
+          </select>
         </div>
       </header>
 
-      {showFilters && (
-        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex gap-4 animate-in slide-in-from-top-2 duration-300">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Risk Level</label>
-            <select 
-              value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value)}
-              className="block w-40 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
-            >
-              <option value="All">All Levels</option>
-              <option value="High">High Impact</option>
-              <option value="Medium">Medium Impact</option>
-              <option value="Low">Low Impact</option>
-            </select>
+      {/* Summary Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-800 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+              <AlertTriangle className="w-12 h-12 text-rose-500" />
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Critical Risks</p>
+            <h3 className="text-3xl font-black text-white mt-2">02</h3>
+            <p className="text-xs font-bold text-rose-500 mt-2 flex items-center gap-1">
+              <ShieldAlert className="w-3 h-3" />
+              Requires Action
+            </p>
+          </div>
+          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-800 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+              <ShieldCheck className="w-12 h-12 text-emerald-500" />
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mitigated Risks</p>
+            <h3 className="text-3xl font-black text-white mt-2">14</h3>
+            <p className="text-xs font-bold text-emerald-500 mt-2 flex items-center gap-1">
+              <ArrowRight className="w-3 h-3" />
+              Last 30 Days
+            </p>
           </div>
         </div>
-      )}
 
-      {/* Risk Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm border-l-4 border-l-rose-500">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">High Risks</p>
-            <AlertTriangle className="w-5 h-5 text-rose-500" />
-          </div>
-          <h3 className="text-4xl font-black text-slate-100">04</h3>
-          <p className="text-xs text-slate-500 mt-2 font-medium">Requiring immediate attention</p>
-        </div>
-
-        <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm border-l-4 border-l-amber-500">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Medium Risks</p>
-            <Info className="w-5 h-5 text-amber-500" />
-          </div>
-          <h3 className="text-4xl font-black text-slate-100">12</h3>
-          <p className="text-xs text-slate-500 mt-2 font-medium">Being monitored by AI</p>
-        </div>
-
-        <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm border-l-4 border-l-emerald-500">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Mitigated</p>
-            <ShieldCheck className="w-5 h-5 text-emerald-500" />
-          </div>
-          <h3 className="text-4xl font-black text-slate-100">28</h3>
-          <p className="text-xs text-slate-500 mt-2 font-medium">Resolved in the last 30 days</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Risk Matrix Chart */}
-        <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-lg font-bold text-slate-100">Risk Matrix</h3>
-              <p className="text-sm text-slate-400 font-medium mt-1">Probability vs Impact mapping</p>
+        {/* Impact Distribution Chart */}
+        <div className="lg:col-span-3 bg-slate-900/50 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-black text-white tracking-tight">Risk Distribution</h3>
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+              <Clock className="w-4 h-4" />
+              Live AI Analysis
             </div>
           </div>
-          <div className="h-[400px] w-full">
+          <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis 
-                  type="number" 
-                  dataKey="impact" 
-                  name="Impact" 
-                  unit="" 
-                  domain={[0, 10]} 
-                  label={{ value: 'Impact', position: 'bottom', offset: 0, fill: '#64748b' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{fill: '#64748b', fontSize: 12}}
-                />
+              <BarChart data={chartData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#1e293b" opacity={0.5} />
+                <XAxis type="number" hide />
                 <YAxis 
-                  type="number" 
-                  dataKey="probability" 
-                  name="Probability" 
-                  unit="%" 
-                  domain={[0, 100]}
-                  label={{ value: 'Probability', angle: -90, position: 'insideLeft', fill: '#64748b' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{fill: '#64748b', fontSize: 12}}
+                  dataKey="name" 
+                  type="category" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#475569', fontSize: 10, fontWeight: 800}} 
+                  width={60}
                 />
-                <ZAxis type="number" dataKey="score" range={[100, 1000]} />
                 <Tooltip 
-                  cursor={{ strokeDasharray: '3 3' }} 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-xl">
-                          <p className="font-bold text-slate-100">{data.name}</p>
-                          <p className="text-xs text-slate-500 mt-1">Impact: {data.impact}/10</p>
-                          <p className="text-xs text-slate-500">Probability: {data.probability}%</p>
-                          <p className="text-xs font-bold text-blue-400 mt-1 text-right">Risk Score: {data.score}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
+                  cursor={{fill: '#1e293b', opacity: 0.4}}
+                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px' }}
                 />
-                <Scatter name="Risks" data={filteredRisks}>
-                  {filteredRisks.map((entry, index) => (
+                <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={30}>
+                  {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
-                </Scatter>
-              </ScatterChart>
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
 
-        {/* Critical Alerts & Actions */}
-        <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-100 mb-6">Top Mitigation Actions</h3>
-          <div className="space-y-4">
-            {[
-              { title: 'Optimize Project Alpha', action: 'Shift 2 FTEs to Offshore', risk: 'High', color: 'rose' },
-              { title: 'Bench Utilization', action: 'Internal Skill Upskilling', risk: 'Med', color: 'amber' },
-              { title: 'Contract SLA Review', action: 'Update Penalty Clauses', risk: 'Med', color: 'amber' },
-              { title: 'Resource Allocation', action: 'Reassign from Bench', risk: 'Low', color: 'emerald' }
-            ].map((item, i) => (
-              <div 
-                key={i} 
-                onClick={() => handleActionClick(item)}
-                className="p-4 border border-slate-800 rounded-xl hover:bg-slate-800/50 transition-colors group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                    item.color === 'rose' ? 'bg-rose-500/10 text-rose-400' :
-                    item.color === 'amber' ? 'bg-amber-500/10 text-amber-400' :
-                    'bg-emerald-500/10 text-emerald-400'
-                  }`}>
-                    {item.risk} Risk
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
-                </div>
-                <h4 className="text-sm font-bold text-slate-200">{item.title}</h4>
-                <p className="text-xs text-slate-500 mt-1 font-medium">{item.action}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 flex gap-3">
-            <BrainCircuit className="w-5 h-5 text-blue-400 shrink-0" />
-            <p className="text-[11px] text-blue-300 font-medium leading-relaxed">
-              AI recommendations are based on historical mitigation success rates and current resource availability.
-            </p>
-          </div>
+      {/* Risk List Section */}
+      <div className="bg-slate-900/50 backdrop-blur-xl rounded-[2rem] border border-slate-800 shadow-2xl overflow-hidden">
+        <div className="p-6 md:p-8 border-b border-slate-800/50">
+          <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+            <BrainCircuit className="w-5 h-5 text-blue-500" />
+            AI Identified Risks
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-950/30">
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-800">Risk Description</th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-800">Impact</th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-800">Probability</th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-800">AI Mitigation Action</th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-800 text-right">Score</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50">
+              {filteredRisks.map((risk) => (
+                <tr key={risk.id} className="group hover:bg-slate-800/20 transition-all cursor-pointer">
+                  <td className="px-6 py-5">
+                    <p className="text-sm font-black text-white group-hover:text-blue-500 transition-colors">{risk.name}</p>
+                    <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{risk.category}</p>
+                  </td>
+                  <td className="px-6 py-5">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getRiskColor(risk.impact)}`}>
+                      {risk.impact}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5 text-sm font-bold text-slate-400">
+                    {risk.probability}
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-300 group-hover:text-blue-400 transition-colors">
+                      <Target className="w-4 h-4 text-blue-500" />
+                      {risk.action}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-right">
+                    <span className={`text-lg font-black ${
+                      risk.score > 70 ? 'text-rose-500' : risk.score > 40 ? 'text-amber-500' : 'text-emerald-500'
+                    }`}>
+                      {risk.score}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* AI Recommendation Box */}
+      <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-[2rem] flex items-start gap-4">
+        <div className="p-3 bg-blue-500/10 rounded-2xl">
+          <BrainCircuit className="w-6 h-6 text-blue-500" />
+        </div>
+        <div>
+          <h4 className="text-sm font-black text-blue-400 uppercase tracking-widest mb-2">AI Strategic Recommendation</h4>
+          <p className="text-sm text-slate-400 font-bold leading-relaxed">
+            Current analysis indicates a concentration of financial risks in Project Alpha and Beta. We recommend an immediate review of resource billing rates and a transition of 15% more non-core tasks to offshore centers to buffer the projected margin impact.
+          </p>
         </div>
       </div>
     </div>

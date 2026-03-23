@@ -21,6 +21,20 @@ const ScenarioSimulator = () => {
   ];
 
   const [scenarios, setScenarios] = useState(initialScenarios);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot download reports.');
+      return;
+    }
+    exportToCSV(scenarios, 'Scenario_Analysis.csv');
+  };
 
   const [simulation, setSimulation] = useState({
     name: 'New Scenario',
@@ -55,187 +69,132 @@ const ScenarioSimulator = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500" id="scenario-simulator-content">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" id="scenario-simulator-content">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
-            <Play className="w-8 h-8 text-primary-600" />
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
+            <Play className="w-8 h-8 md:w-10 md:h-10 text-blue-500" />
             Scenario Simulator
           </h1>
-          <p className="text-slate-400 mt-2 font-medium">Model "What-If" scenarios to predict the impact of rate or resource changes.</p>
+          <p className="text-slate-400 mt-2 font-bold tracking-wide">Model "What-If" scenarios to predict the impact of rate or resource changes.</p>
         </div>
         <button 
-          onClick={() => exportToCSV(scenarios, 'Scenario_Analysis.csv')}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          onClick={handleExport}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full md:w-auto"
         >
-          <Download className="w-4 h-4" />
-          Export CSV
+          <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+          EXPORT CSV
         </button>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Simulation Controls */}
-        <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-sm space-y-6 transition-all">
-          <h3 className="text-lg font-bold text-slate-100 mb-2">Configure Simulation</h3>
-          <div className="space-y-4">
+        <div className="bg-slate-900/50 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl space-y-6">
+          <h3 className="text-xl font-black text-white mb-2 tracking-tight">Configure Simulation</h3>
+          <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Scenario Name</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-500">Scenario Name</label>
               <input 
                 type="text" 
                 value={simulation.name}
                 onChange={(e) => setSimulation({ ...simulation, name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Avg. Billing Rate ($)</label>
-              <input 
-                type="number" 
-                min="0"
-                value={simulation.billingRate}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  if (val < 0) return;
-                  setSimulation({ ...simulation, billingRate: val });
-                }}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300">Total Resources</label>
-              <input 
-                type="number" 
-                min="0"
-                value={simulation.resources}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  if (val < 0) return;
-                  setSimulation({ ...simulation, resources: val });
-                }}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
               />
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-bold text-slate-300">Utilization (%)</label>
-                <span className="text-lg font-black text-primary-500 bg-primary-500/10 px-3 py-1 rounded-lg border border-primary-500/20 shadow-sm transition-all duration-300">
-                  {simulation.utilization}%
-                </span>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-500">Billing Rate (₹/hr)</label>
+                <span className="text-sm font-black text-blue-500">{simulation.billingRate}</span>
               </div>
-              <div className="relative pt-2">
-                <input 
-                  type="range" 
-                  min="0" max="100"
-                  value={simulation.utilization}
-                  onChange={(e) => setSimulation({ ...simulation, utilization: Number(e.target.value) })}
-                  className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary-500 hover:accent-primary-400 transition-all border border-slate-700/50" 
-                />
-                <div className="flex justify-between mt-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest px-0.5">
-                  <span className="flex flex-col items-center gap-1">
-                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
-                    0%
-                  </span>
-                  <span className="flex flex-col items-center gap-1">
-                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
-                    25%
-                  </span>
-                  <span className="flex flex-col items-center gap-1">
-                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
-                    50%
-                  </span>
-                  <span className="flex flex-col items-center gap-1">
-                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
-                    75%
-                  </span>
-                  <span className="flex flex-col items-center gap-1">
-                    <span className="w-0.5 h-1.5 bg-slate-700 rounded-full"></span>
-                    100%
-                  </span>
-                </div>
-              </div>
+              <input 
+                type="range" 
+                min="20" 
+                max="150" 
+                value={simulation.billingRate}
+                onChange={(e) => setSimulation({ ...simulation, billingRate: parseInt(e.target.value) })}
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
             </div>
-            <div className="pt-4 flex gap-3">
-              <button 
-                onClick={handleReset}
-                className="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Reset
-              </button>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-500">Utilization (%)</label>
+                <span className="text-sm font-black text-emerald-500">{simulation.utilization}%</span>
+              </div>
+              <input 
+                type="range" 
+                min="50" 
+                max="100" 
+                value={simulation.utilization}
+                onChange={(e) => setSimulation({ ...simulation, utilization: parseInt(e.target.value) })}
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+              />
+            </div>
+            <div className="pt-6 flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={runSimulation}
-                className="flex-[2] py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 flex items-center justify-center gap-2"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-black text-white transition-all shadow-xl shadow-blue-500/20 group"
               >
-                <Play className="w-4 h-4" />
-                Run Simulation
+                <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
+                RUN MODEL
+              </button>
+              <button 
+                onClick={handleReset}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-sm font-black text-slate-300 transition-all"
+              >
+                <RotateCcw className="w-4 h-4" />
+                RESET
               </button>
             </div>
           </div>
         </div>
 
-        {/* Comparison View */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-sm transition-all">
-            <h3 className="text-lg font-bold text-slate-100 mb-8">Scenario Comparison (Margin %)</h3>
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={scenarios}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#64748b', fontSize: 12, fontWeight: 500}} 
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#64748b', fontSize: 12, fontWeight: 500}} 
-                    unit="%"
-                  />
-                  <Tooltip 
-                    cursor={{fill: '#0f172a'}}
-                    contentStyle={{ 
-                      borderRadius: '12px', 
-                      border: 'none', 
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                      backgroundColor: '#0f172a',
-                      color: '#f8fafc'
-                    }}
-                  />
-                  <Bar dataKey="margin" radius={[6, 6, 0, 0]}>
-                    {scenarios.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.margin > 35 ? '#10b981' : '#0ea5e9'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+        {/* Results Visualization */}
+        <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 className="text-xl font-black text-white tracking-tight">Predicted Margin Impact</h3>
+            <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-slate-500">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                Margin %
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {scenarios.map((s) => (
-              <div key={s.id} className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm flex items-center justify-between group transition-all">
-                <div>
-                  <h4 className="font-bold text-slate-100">{s.name}</h4>
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-slate-500 font-medium">Rate: ${s.billingRate}/hr</span>
-                    <span className="text-xs text-slate-500 font-medium">Resources: {s.resources}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`text-lg font-black ${s.margin > 35 ? 'text-emerald-500' : 'text-primary-500'}`}>
-                    {s.margin.toFixed(1)}%
-                  </p>
-                  <button 
-                    onClick={() => setScenarios(scenarios.filter(sc => sc.id !== s.id))}
-                    className="text-slate-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="h-[300px] md:h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={scenarios}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" opacity={0.5} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#475569', fontSize: 10, fontWeight: 800}}
+                  dy={15}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#475569', fontSize: 10, fontWeight: 800}}
+                  tickFormatter={(v) => `${v}%`}
+                />
+                <Tooltip 
+                  cursor={{fill: '#1e293b', opacity: 0.4}}
+                  contentStyle={{ 
+                    backgroundColor: '#0f172a', 
+                    border: '1px solid #1e293b',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'
+                  }}
+                />
+                <Bar dataKey="margin" radius={[8, 8, 0, 0]} barSize={40}>
+                  {scenarios.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.margin > 35 ? '#10b981' : entry.margin > 25 ? '#3b82f6' : '#f43f5e'} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

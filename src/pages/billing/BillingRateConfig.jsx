@@ -1,49 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IndianRupee, Plus, Trash2, Edit2, Download, Info, Search } from 'lucide-react';
 import { exportToCSV } from '../../utils/exportUtils';
 
 const BillingRateConfig = () => {
-  const [rates, setRates] = useState([
-    { id: 1, role: 'Senior Architect', offshore: 3500, onshore: 9500, currency: 'INR', status: 'Active' },
-    { id: 2, role: 'Full Stack Developer', offshore: 2200, onshore: 7500, currency: 'INR', status: 'Active' },
-    { id: 3, role: 'UI/UX Lead', offshore: 2800, onshore: 8200, currency: 'INR', status: 'Active' },
-    { id: 4, role: 'Project Manager', offshore: 3200, onshore: 8800, currency: 'INR', status: 'Active' },
-    { id: 5, role: 'QA Engineer', offshore: 1800, onshore: 6500, currency: 'INR', status: 'Active' },
-  ]);
+  const [rates, setRates] = useState(() => {
+    const storedRates = localStorage.getItem('billingRates');
+    return storedRates ? JSON.parse(storedRates) : [
+      { id: 1, role: 'Senior Architect', offshore: 3500, onshore: 9500, currency: 'INR', status: 'Active' },
+      { id: 2, role: 'Full Stack Developer', offshore: 2200, onshore: 7500, currency: 'INR', status: 'Active' },
+      { id: 3, role: 'UI/UX Lead', offshore: 2800, onshore: 8200, currency: 'INR', status: 'Active' },
+      { id: 4, role: 'Project Manager', offshore: 3200, onshore: 8800, currency: 'INR', status: 'Active' },
+      { id: 5, role: 'QA Engineer', offshore: 1800, onshore: 6500, currency: 'INR', status: 'Active' },
+    ];
+  });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingRate, setEditingRate] = useState(null);
   const [formData, setFormData] = useState({ role: '', offshore: '', onshore: '', currency: 'INR' });
+  const [errors, setErrors] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('billingRates', JSON.stringify(rates));
+  }, [rates]);
 
   const filteredRates = rates.filter(r => r.role.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleAdd = () => {
     setEditingRate(null);
     setFormData({ role: '', offshore: '', onshore: '', currency: 'INR' });
+    setErrors({});
     setShowForm(true);
   };
 
   const handleEdit = (rate) => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot edit records.');
+      return;
+    }
     setEditingRate(rate);
     setFormData({ role: rate.role, offshore: rate.offshore, onshore: rate.onshore, currency: rate.currency });
+    setErrors({});
     setShowForm(true);
   };
 
   const handleDelete = (id) => {
+    if (currentUser?.role === 'Team Lead') {
+      alert('Unauthorized: Team Leads cannot delete records.');
+      return;
+    }
     if (window.confirm('Are you sure you want to delete this rate?')) {
-      setRates(rates.filter(r => r.id !== id));
+      const updatedRates = rates.filter(r => r.id !== id);
+      setRates(updatedRates);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validation for Role (no numbers allowed)
+    if (/\d/.test(formData.role)) {
+      setErrors({ ...errors, role: 'Role should contain only alphabetic characters' });
+      return;
+    }
+
     if (editingRate) {
       setRates(rates.map(r => r.id === editingRate.id ? { ...r, ...formData } : r));
     } else {
       setRates([...rates, { ...formData, id: Date.now(), status: 'Active' }]);
     }
     setShowForm(false);
+    setErrors({});
   };
 
   return (
@@ -83,9 +116,19 @@ const BillingRateConfig = () => {
                 type="text" 
                 required
                 value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
-                className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/20"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Only allow letters and spaces
+                  if (/[0-9]/.test(value)) {
+                    setErrors({ ...errors, role: 'Role should contain only alphabetic characters' });
+                    return;
+                  }
+                  setFormData({...formData, role: value});
+                  if (errors.role) setErrors({ ...errors, role: '' });
+                }}
+                className={`w-full px-4 py-2 bg-slate-950 border ${errors.role ? 'border-rose-500' : 'border-slate-800'} rounded-xl text-sm text-slate-200 outline-none focus:ring-2 ${errors.role ? 'focus:ring-rose-500/20' : 'focus:ring-primary-500/20'}`}
               />
+              {errors.role && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.role}</p>}
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-400">Offshore Rate</label>
@@ -187,7 +230,7 @@ const BillingRateConfig = () => {
                     <span className="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-md">{rate.currency}</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => handleEdit(rate)}
                         className="p-2 text-slate-500 hover:text-primary-400 hover:bg-slate-800 rounded-lg transition-all"
