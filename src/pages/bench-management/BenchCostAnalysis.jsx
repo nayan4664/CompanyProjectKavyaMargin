@@ -51,13 +51,15 @@ const BenchCostAnalysis = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Financial impact assessment of unallocated resources on organizational margins.</p>
         </div>
-        <button 
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       {/* Financial Summary */}

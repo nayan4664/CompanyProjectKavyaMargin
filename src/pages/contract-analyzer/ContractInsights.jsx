@@ -3,6 +3,13 @@ import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle2, Download, FileText,
 import { exportToCSV } from '../../utils/exportUtils';
 
 const ContractInsights = () => {
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
   const insights = [
     {
       id: 1,
@@ -43,13 +50,15 @@ const ContractInsights = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">AI-generated strategic insights and risks extracted from active contracts.</p>
         </div>
-        <button 
-          onClick={() => exportToCSV(insights, 'Contract_Insights_Report.csv')}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
+          <button 
+            onClick={() => exportToCSV(insights, 'Contract_Insights_Report.csv')}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       {/* Insight Summary */}

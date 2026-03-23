@@ -121,15 +121,17 @@ const PaymentTracking = () => {
 
         <div className="flex gap-3">
           {/* EXPORT */}
-          <button
-            onClick={() =>
-              exportToCSV(filteredPayments, "Payment_History.csv")
-            }
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
-          >
-            <Download className="w-4 h-4" />
-            Export
-          </button>
+          {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Viewers' && (
+            <button
+              onClick={() =>
+                exportToCSV(filteredPayments, "Payment_History.csv")
+              }
+              className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
+            >
+              <Download className="w-4 h-4" />
+              Export
+            </button>
+          )}
         </div>
       </header>
 

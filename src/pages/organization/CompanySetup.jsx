@@ -20,10 +20,15 @@ const CompanySetup = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     fetchCompanyData();
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
   }, []);
+
+  const isViewOnly = currentUser?.role === 'Team Lead';
 
   const fetchCompanyData = async () => {
     try {
@@ -117,13 +122,15 @@ const CompanySetup = () => {
           <p className="text-slate-400 mt-2 font-medium">Manage your organization's core information and global settings.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => exportToCSV([formData], 'Company_Setup.csv')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
+          {currentUser?.role !== 'Team Lead' && (
+            <button 
+              onClick={() => exportToCSV([formData], 'Company_Setup.csv')}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          )}
         </div>
       </header>
 
@@ -142,8 +149,9 @@ const CompanySetup = () => {
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleInputChange}
+                  disabled={isViewOnly}
                   placeholder="Enter Company name"
-                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.companyName ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.companyName ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed`} 
                 />
                 {errors.companyName && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.companyName}</p>}
               </div>
@@ -157,8 +165,9 @@ const CompanySetup = () => {
                   name="registrationNumber"
                   value={formData.registrationNumber}
                   onChange={handleInputChange}
+                  disabled={isViewOnly}
                   placeholder="Enter Registration No"
-                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.registrationNumber ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.registrationNumber ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed`} 
                 />
                 {errors.registrationNumber && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.registrationNumber}</p>}
               </div>
@@ -172,8 +181,9 @@ const CompanySetup = () => {
                   name="website"
                   value={formData.website}
                   onChange={handleInputChange}
+                  disabled={isViewOnly}
                   placeholder="Enter Website"
-                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.website ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.website ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed`} 
                 />
                 {errors.website && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.website}</p>}
               </div>
@@ -187,8 +197,9 @@ const CompanySetup = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  disabled={isViewOnly}
                   placeholder="Enter Work Email"
-                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.email ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all`} 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.email ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed`} 
                 />
                 {errors.email && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.email}</p>}
               </div>
@@ -203,23 +214,26 @@ const CompanySetup = () => {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
+                disabled={isViewOnly}
                 placeholder="Enter Office Address"
                 rows="3"
-                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.address ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all resize-none`}
+                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.address ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed`}
               ></textarea>
               {errors.address && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.address}</p>}
             </div>
 
-            <div className="flex justify-end pt-4">
-              <button 
-                type="submit" 
-                disabled={isSaving}
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
-              >
-                <Save className="w-4 h-4" />
-                {isSaving ? 'Saving Changes...' : 'Save Changes'}
-              </button>
-            </div>
+            {currentUser?.role !== 'Team Lead' && (
+              <div className="flex justify-end pt-4">
+                <button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  {isSaving ? 'Saving Changes...' : 'Save Changes'}
+                </button>
+              </div>
+            )}
           </form>
         </div>
 

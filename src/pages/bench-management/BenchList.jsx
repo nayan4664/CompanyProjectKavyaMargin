@@ -31,8 +31,8 @@ const BenchList = () => {
   }, []);
 
   const handleExport = (type) => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot download reports.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
       return;
     }
     if (type === 'CSV') exportToCSV(benchList, 'Bench_Resources.csv');
@@ -42,8 +42,8 @@ const BenchList = () => {
   const departments = ['All', ...new Set(benchList.map(res => res.dept))];
 
   const handleEditClick = (res) => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot edit records.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot edit records.`);
       return;
     }
     setEditingId(res.id);
@@ -69,8 +69,8 @@ const BenchList = () => {
   };
 
   const handleDelete = (id) => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot delete records.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot delete records.`);
       return;
     }
     if (window.confirm('Are you sure you want to delete this resource from the bench?')) {
@@ -101,13 +101,15 @@ const BenchList = () => {
           <p className="text-slate-400 mt-2 font-bold tracking-wide">Detailed inventory of unallocated resources and their bench duration.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <button 
-            onClick={() => handleExport('CSV')}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full sm:w-auto"
-          >
-            <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
-            EXPORT CSV
-          </button>
+          {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
+            <button 
+              onClick={() => handleExport('CSV')}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full sm:w-auto"
+            >
+              <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+              EXPORT CSV
+            </button>
+          )}
         </div>
       </header>
 
@@ -203,28 +205,30 @@ const BenchList = () => {
                     <div className="flex items-center justify-end gap-2">
                       {editingId === res.id ? (
                         <>
-                          <button onClick={handleSaveEdit} className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-all">
+                          <button onClick={handleSaveEdit} className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">
                             <Check className="w-4 h-4" />
                           </button>
-                          <button onClick={handleCancelEdit} className="p-2 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all">
+                          <button onClick={handleCancelEdit} className="p-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all">
                             <X className="w-4 h-4" />
                           </button>
                         </>
                       ) : (
-                        <>
-                          <button 
-                            onClick={() => handleEditClick(res)}
-                            className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(res.id)}
-                            className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </>
+                        currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
+                          <>
+                            <button 
+                              onClick={() => handleEditClick(res)}
+                              className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 transition-all opacity-0 group-hover:opacity-100"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(res.id)}
+                              className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )
                       )}
                     </div>
                   </td>

@@ -77,32 +77,28 @@ const ForecastInsights = () => {
           <p className="text-slate-400 mt-2 font-bold tracking-wide">Strategic revenue and cost projections with AI-derived recommendations.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <button 
-            onClick={() => {
-              if (currentUser?.role === 'Team Lead') {
-                alert('Unauthorized: Team Leads cannot download reports.');
-                return;
-              }
-              exportToCSV(projections, 'Forecast_Insights.csv');
-            }}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl w-full sm:w-auto"
-          >
-            <Download className="w-4 h-4 text-blue-500" />
-            EXPORT CSV
-          </button>
-          <button 
-            onClick={() => {
-              if (currentUser?.role === 'Team Lead') {
-                alert('Unauthorized: Team Leads cannot apply recommendations.');
-                return;
-              }
-              handleApplyRecommendations();
-            }}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-black text-white transition-all shadow-xl shadow-blue-500/20 w-full sm:w-auto"
-          >
-            <Sparkles className="w-4 h-4" />
-            APPLY RECOMMENDATIONS
-          </button>
+          {currentUser?.role !== 'Team Lead' && (
+            <>
+              <button 
+                onClick={() => {
+                  exportToCSV(projections, 'Forecast_Insights.csv');
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl w-full sm:w-auto"
+              >
+                <Download className="w-4 h-4 text-blue-500" />
+                EXPORT CSV
+              </button>
+              <button 
+                onClick={() => {
+                  handleApplyRecommendations();
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-black text-white transition-all shadow-xl shadow-blue-500/20 w-full sm:w-auto"
+              >
+                <Sparkles className="w-4 h-4" />
+                APPLY RECOMMENDATIONS
+              </button>
+            </>
+          )}
         </div>
       </header>
 

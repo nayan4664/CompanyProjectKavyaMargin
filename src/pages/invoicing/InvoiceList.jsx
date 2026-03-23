@@ -89,8 +89,8 @@ const InvoiceList = () => {
   });
 
   const handleExport = (type) => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot download reports.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
       return;
     }
     if (type === 'CSV') exportToCSV(invoices, 'Invoice_Report.csv');
@@ -108,13 +108,15 @@ const InvoiceList = () => {
           <p className="text-slate-400 mt-2 font-bold tracking-wide">Manage and track client billing cycles</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button 
-            onClick={() => handleExport('CSV')}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full sm:w-auto"
-          >
-            <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
-            EXPORT CSV
-          </button>
+          {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Viewers' && currentUser?.role !== 'Project Manager' && (
+            <button 
+              onClick={() => handleExport('CSV')}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full sm:w-auto"
+            >
+              <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+              EXPORT CSV
+            </button>
+          )}
           {currentUser?.role === 'Super Admin' && (
             <Link 
               to="/invoicing/generate"

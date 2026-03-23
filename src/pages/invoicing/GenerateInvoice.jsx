@@ -9,15 +9,15 @@ const GenerateInvoice = () => {
   const { addInvoice } = useContext(InvoiceContext);
 
   const [currentUser, setCurrentUser] = useState(null);
+  const isViewOnly = currentUser?.role === 'Project Manager';
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
     
-    // Redirect if unauthorized (Project Manager should not access this page)
-    if (user?.role === 'Project Manager') {
+    // Redirect if unauthorized (Team Lead and Viewers should not access this page)
+    if (user?.role === 'Team Lead' || user?.role === 'Viewers') {
       navigate('/invoicing/list');
-      alert('Unauthorized: Project Managers cannot create invoices.');
     }
   }, [navigate]);
 
@@ -83,18 +83,22 @@ const GenerateInvoice = () => {
           <div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
               <Receipt className="w-8 h-8 md:w-10 md:h-10 text-blue-500" />
-              Generate Invoice
+              {isViewOnly ? 'View Invoice' : 'Generate Invoice'}
             </h1>
-            <p className="text-slate-400 mt-1 font-bold tracking-wide">Create and customize professional client invoices.</p>
+            <p className="text-slate-400 mt-1 font-bold tracking-wide">
+              {isViewOnly ? 'Review professional client invoice details.' : 'Create and customize professional client invoices.'}
+            </p>
           </div>
         </div>
-        <button 
-          onClick={() => exportToPDF('invoice-preview', `Invoice_${invoiceData.invoiceId}.pdf`)} 
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group"
-        >
-          <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
-          PREVIEW PDF
-        </button>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Viewers' && currentUser?.role !== 'Project Manager' && (
+          <button 
+            onClick={() => exportToPDF('invoice-preview', `Invoice_${invoiceData.invoiceId}.pdf`)} 
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group"
+          >
+            <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+            PREVIEW PDF
+          </button>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -106,9 +110,10 @@ const GenerateInvoice = () => {
               <input 
                 type="text" 
                 placeholder="Enter client name" 
+                disabled={isViewOnly}
                 value={invoiceData.clientName} 
                 onChange={e => setInvoiceData({ ...invoiceData, clientName: e.target.value })} 
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
@@ -116,27 +121,30 @@ const GenerateInvoice = () => {
               <input 
                 type="text" 
                 placeholder="Enter project name" 
+                disabled={isViewOnly}
                 value={invoiceData.project} 
                 onChange={e => setInvoiceData({ ...invoiceData, project: e.target.value })} 
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Invoice Date</label>
               <input 
                 type="date" 
+                disabled={isViewOnly}
                 value={invoiceData.date} 
                 onChange={e => setInvoiceData({ ...invoiceData, date: e.target.value })} 
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Due Date</label>
               <input 
                 type="date" 
+                disabled={isViewOnly}
                 value={invoiceData.dueDate} 
                 onChange={e => setInvoiceData({ ...invoiceData, dueDate: e.target.value })} 
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -144,13 +152,15 @@ const GenerateInvoice = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800/50 pb-4">
               <h3 className="text-xl font-black text-white tracking-tight">Invoice Items</h3>
-              <button 
-                onClick={handleAddItem} 
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Line Item
-              </button>
+              {!isViewOnly && (
+                <button 
+                  onClick={handleAddItem} 
+                  className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Line Item
+                </button>
+              )}
             </div>
             
             <div className="space-y-4">
@@ -160,27 +170,30 @@ const GenerateInvoice = () => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-600">Description</label>
                     <input 
                       type="text" 
+                      disabled={isViewOnly}
                       value={item.description} 
                       onChange={e => updateItem(item.id, 'description', e.target.value)} 
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500/30"
+                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-600">Hours</label>
                     <input 
                       type="number" 
+                      disabled={isViewOnly}
                       value={item.hours} 
                       onChange={e => updateItem(item.id, 'hours', Number(e.target.value))} 
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500/30"
+                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-600">Rate</label>
                     <input 
                       type="number" 
+                      disabled={isViewOnly}
                       value={item.rate} 
                       onChange={e => updateItem(item.id, 'rate', Number(e.target.value))} 
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500/30"
+                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2 px-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div className="flex items-center justify-between gap-4">
@@ -188,12 +201,14 @@ const GenerateInvoice = () => {
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-2">Total</label>
                       <span className="text-sm font-black text-blue-500">₹{item.amount.toLocaleString()}</span>
                     </div>
-                    <button 
-                      onClick={() => removeItem(item.id)} 
-                      className="p-2 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!isViewOnly && (
+                      <button 
+                        onClick={() => removeItem(item.id)} 
+                        className="p-2 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -211,13 +226,15 @@ const GenerateInvoice = () => {
                 <p className="text-xl font-black text-slate-400">₹{tax.toLocaleString()}</p>
               </div>
             </div>
-            <button 
-              onClick={handleSave} 
-              className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-sm font-black transition-all shadow-xl shadow-blue-500/20"
-            >
-              <Save className="w-5 h-5" />
-              GENERATE INVOICE
-            </button>
+            {!isViewOnly && (
+              <button 
+                onClick={handleSave} 
+                className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-sm font-black transition-all shadow-xl shadow-blue-500/20"
+              >
+                <Save className="w-5 h-5" />
+                GENERATE INVOICE
+              </button>
+            )}
           </div>
         </div>
 

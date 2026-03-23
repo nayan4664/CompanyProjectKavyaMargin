@@ -90,20 +90,24 @@ const BillingRateConfig = () => {
           <p className="text-slate-400 mt-2 font-medium">Standardize and manage hourly billing rates across different roles and regions.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => exportToCSV(rates, 'Standard_Billing_Rates.csv')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-          <button 
-            onClick={handleAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
-          >
-            <Plus className="w-4 h-4" />
-            Add New Rate
-          </button>
+          {currentUser?.role !== 'Team Lead' && (
+            <>
+              <button 
+                onClick={() => exportToCSV(rates, 'Standard_Billing_Rates.csv')}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+              <button 
+                onClick={handleAdd}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                Add New Rate
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -230,22 +234,24 @@ const BillingRateConfig = () => {
                     <span className="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-md">{rate.currency}</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => handleEdit(rate)}
-                        className="p-2 text-slate-500 hover:text-primary-400 hover:bg-slate-800 rounded-lg transition-all"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(rate.id)}
-                        className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    {currentUser?.role !== 'Team Lead' && (
+                      <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => handleEdit(rate)}
+                          className="p-2 text-slate-500 hover:text-primary-400 hover:bg-slate-800 rounded-lg transition-all"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(rate.id)}
+                          className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                   </td>
+                 </tr>
               ))}
             </tbody>
           </table>

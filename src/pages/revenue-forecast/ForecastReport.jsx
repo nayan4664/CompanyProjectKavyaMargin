@@ -86,8 +86,8 @@ const ForecastReport = () => {
   });
 
   const handleExport = (data, filename) => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot download reports.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role?.toLowerCase() === 'hr' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
       return;
     }
     exportToCSV(data, filename);
@@ -124,21 +124,25 @@ const ForecastReport = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleExport(filteredReports, "ForecastReports.csv")}
-            className="flex items-center justify-center gap-2 bg-emerald-600/10 border border-emerald-500/50 px-4 py-2 rounded-xl text-emerald-400 text-sm font-bold hover:bg-emerald-600/20 transition-all"
-          >
-            <Download className="w-4 h-4" /> 
-            <span>CSV Export</span>
-          </button>
+          {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && currentUser?.role !== 'Project Manager' && (
+            <>
+              <button
+                onClick={() => handleExport(filteredReports, "ForecastReports.csv")}
+                className="flex items-center justify-center gap-2 bg-emerald-600/10 border border-emerald-500/50 px-4 py-2 rounded-xl text-emerald-400 text-sm font-bold hover:bg-emerald-600/20 transition-all"
+              >
+                <Download className="w-4 h-4" /> 
+                <span>CSV Export</span>
+              </button>
 
-          <button
-            onClick={() => handleExport(reportData, "Forecast_Report.csv")}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export All</span>
-          </button>
+              <button
+                onClick={() => handleExport(reportData, "Forecast_Report.csv")}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export All</span>
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -248,13 +252,15 @@ const ForecastReport = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => downloadReport(report)}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
-            >
-              <Download className="w-4 h-4" /> 
-              <span>Download</span>
-            </button>
+            {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && currentUser?.role !== 'Project Manager' && (
+              <button
+                onClick={() => downloadReport(report)}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+              >
+                <Download className="w-4 h-4" /> 
+                <span>Download</span>
+              </button>
+            )}
           </div>
         ))}
       </div>

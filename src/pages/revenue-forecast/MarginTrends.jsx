@@ -84,8 +84,8 @@ const MarginTrends = () => {
 
   // Excel Export
   const exportExcel = () => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot download reports.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role?.toLowerCase() === 'hr' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
       return;
     }
 
@@ -135,29 +135,31 @@ const MarginTrends = () => {
           </select>
 
           {/* Excel Export */}
-
-          <button
-            onClick={exportExcel}
-            className="bg-green-600 px-4 py-2 rounded text-white"
-          >
-            Export Excel
-          </button>
+          {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && currentUser?.role !== 'Project Manager' && (
+            <button
+              onClick={exportExcel}
+              className="bg-green-600 px-4 py-2 rounded text-white"
+            >
+              Export Excel
+            </button>
+          )}
 
           {/* CSV Export */}
-
-          <button
-            onClick={() => {
-              if (currentUser?.role === 'Team Lead') {
-                alert('Unauthorized: Team Leads cannot download reports.');
-                return;
-              }
-              exportToCSV(trendData, "MarginTrends.csv");
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
+          {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && currentUser?.role !== 'Project Manager' && (
+            <button
+              onClick={() => {
+                if (currentUser?.role === 'Team Lead' || currentUser?.role?.toLowerCase() === 'hr' || currentUser?.role === 'Project Manager') {
+                  alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
+                  return;
+                }
+                exportToCSV(trendData, "MarginTrends.csv");
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          )}
 
         </div>
 

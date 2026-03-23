@@ -36,7 +36,7 @@ const EmployeeCostList = () => {
   };
 
   const deleteEmployee = async (id) => {
-    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers') {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role === 'Project Manager') {
       alert('Unauthorized: You do not have permission to delete records.');
       return;
     }
@@ -68,8 +68,8 @@ const EmployeeCostList = () => {
     }).format(val);
 
   const handleExport = () => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot download reports.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Project Manager') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
       return;
     }
     exportToCSV(employees, 'Employee_Cost_Report.csv');
@@ -86,14 +86,16 @@ const EmployeeCostList = () => {
           <p className="text-slate-400 mt-2 font-medium">Manage resource costs, allocation, and professional profiles.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-          {currentUser?.role !== 'Viewers' && currentUser?.role !== 'Team Lead' && (
+          {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
+            <button 
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          )}
+          {currentUser?.role !== 'Viewers' && currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
             <Link 
               to="/employee-cost/add"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
@@ -186,16 +188,10 @@ const EmployeeCostList = () => {
                     <span className="text-sm font-bold text-slate-100">{formatCurrency(emp.monthlyCost)}</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {currentUser?.role !== 'Viewers' && (
+                    {currentUser?.role !== 'Viewers' && currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Link 
                           to={`/employee-cost/edit/${emp._id || emp.id}`}
-                          onClick={(e) => {
-                            if (currentUser?.role === 'Team Lead') {
-                              e.preventDefault();
-                              alert('Unauthorized: Team Leads cannot edit records.');
-                            }
-                          }}
                           className="p-2 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all"
                         >
                           <Edit2 className="w-4 h-4" />

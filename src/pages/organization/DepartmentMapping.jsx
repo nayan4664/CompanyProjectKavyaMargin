@@ -13,6 +13,12 @@ const DepartmentMapping = () => {
 
   const [newDept, setNewDept] = useState({ name: '', head: '', staffCount: '', budget: '' });
   const [errors, setErrors] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -74,112 +80,117 @@ const DepartmentMapping = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Define your organizational structure and departmental ownership.</p>
         </div>
-        <button 
-          onClick={() => exportToCSV(departments, 'Departments.csv')}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && (
+          <button 
+            onClick={() => exportToCSV(departments, 'Departments.csv')}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Add Dept Form */}
-        <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm h-fit transition-all">
-          <h3 className="text-lg font-bold text-slate-100 mb-6">Create Department</h3>
-          <form onSubmit={handleAddDept} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">Department Name</label>
-              <input 
-                type="text" 
-                placeholder="e.g. Quality Assurance"
-                value={newDept.name}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Only allow letters and spaces
-                  if (/[0-9]/.test(value)) return;
-                  setNewDept({ ...newDept, name: value });
-                  if (errors.name) setErrors({ ...errors, name: '' });
-                }}
-                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
-              />
-              {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">Department Head</label>
-              <input 
-                type="text" 
-                placeholder="Manager Name"
-                value={newDept.head}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Only allow letters and spaces
-                  if (/[0-9]/.test(value)) return;
-                  setNewDept({ ...newDept, head: value });
-                  if (errors.head) setErrors({ ...errors, head: '' });
-                }}
-                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.head ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
-              />
-              {errors.head && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.head}</p>}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+        {currentUser?.role !== 'Team Lead' && (
+          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm h-fit transition-all">
+            <h3 className="text-lg font-bold text-slate-100 mb-6">Create Department</h3>
+            <form onSubmit={handleAddDept} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-300 ml-1">Staff Count</label>
+                <label className="text-sm font-bold text-slate-300 ml-1">Department Name</label>
                 <input 
-                  type="number" 
-                  placeholder="0"
-                  min="0"
-                  value={newDept.staffCount}
+                  type="text" 
+                  placeholder="e.g. Quality Assurance"
+                  value={newDept.name}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value !== '' && Number(value) < 0) return;
-                    setNewDept({ ...newDept, staffCount: value });
-                    if (errors.staffCount) setErrors({ ...errors, staffCount: '' });
+                    // Only allow letters and spaces
+                    if (/[0-9]/.test(value)) return;
+                    setNewDept({ ...newDept, name: value });
+                    if (errors.name) setErrors({ ...errors, name: '' });
                   }}
-                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.staffCount ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
                 />
-                {errors.staffCount && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.staffCount}</p>}
+                {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
               </div>
-              <div className="space-y-2 relative">
-                <label className="text-sm font-bold text-slate-300 ml-1">Budget</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₹</span>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">Department Head</label>
+                <input 
+                  type="text" 
+                  placeholder="Manager Name"
+                  value={newDept.head}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow letters and spaces
+                    if (/[0-9]/.test(value)) return;
+                    setNewDept({ ...newDept, head: value });
+                    if (errors.head) setErrors({ ...errors, head: '' });
+                  }}
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.head ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                />
+                {errors.head && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.head}</p>}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-300 ml-1">Staff Count</label>
                   <input 
-                    type="text" 
+                    type="number" 
                     placeholder="0"
-                    value={newDept.budget.replace('₹', '')}
+                    min="0"
+                    value={newDept.staffCount}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value.includes('-')) return;
-                      // Only allow numbers and decimal
-                      const cleanValue = value.replace(/[^0-9.]/g, '');
-                      setNewDept({ ...newDept, budget: cleanValue });
-                      if (errors.budget) setErrors({ ...errors, budget: '' });
+                      if (value !== '' && Number(value) < 0) return;
+                      setNewDept({ ...newDept, staffCount: value });
+                      if (errors.staffCount) setErrors({ ...errors, staffCount: '' });
                     }}
-                    className={`w-full pl-8 pr-4 py-2.5 bg-slate-800/50 border ${errors.budget ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                    className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.staffCount ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
                   />
+                  {errors.staffCount && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.staffCount}</p>}
                 </div>
-                {errors.budget && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.budget}</p>}
+                <div className="space-y-2 relative">
+                  <label className="text-sm font-bold text-slate-300 ml-1">Budget</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₹</span>
+                    <input 
+                      type="text" 
+                      placeholder="0"
+                      value={newDept.budget.replace('₹', '')}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.includes('-')) return;
+                        // Only allow numbers and decimal
+                        const cleanValue = value.replace(/[^0-9.]/g, '');
+                        setNewDept({ ...newDept, budget: cleanValue });
+                        if (errors.budget) setErrors({ ...errors, budget: '' });
+                      }}
+                      className={`w-full pl-8 pr-4 py-2.5 bg-slate-800/50 border ${errors.budget ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                    />
+                  </div>
+                  {errors.budget && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.budget}</p>}
+                </div>
               </div>
-            </div>
-            <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
-              <Plus className="w-4 h-4" />
-              Create Department
-            </button>
-          </form>
-        </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
+                <Plus className="w-4 h-4" />
+                Create Department
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Dept Grid */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`${currentUser?.role === 'Team Lead' ? 'lg:col-span-3' : 'lg:col-span-2'} grid grid-cols-1 md:grid-cols-2 gap-6`}>
           {departments.map((dept) => (
             <div key={dept.id} className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm hover:border-blue-500/50 transition-all group relative">
-              <button 
-                onClick={() => deleteDept(dept.id)}
-                className="absolute top-4 right-4 p-2 text-slate-600 hover:text-rose-400 hover:bg-rose-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-              
+              {currentUser?.role !== 'Team Lead' && (
+                <button 
+                  onClick={() => deleteDept(dept.id)}
+                  className="absolute top-4 right-4 p-2 text-slate-600 hover:text-rose-400 hover:bg-rose-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-400">
                   <Users className="w-6 h-6" />

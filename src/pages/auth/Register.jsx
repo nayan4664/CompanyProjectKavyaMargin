@@ -43,13 +43,20 @@ const Register = () => {
     } else if (name === 'contactNo') {
       // Enforce +91 prefix and only digits
       let val = value;
+      let digits = '';
+      
       if (!val.startsWith('+91')) {
-        const digits = val.replace(/\D/g, '');
-        val = digits ? '+91' + digits : '+91';
+        digits = val.replace(/\D/g, '');
       } else {
-        const digits = val.slice(3).replace(/\D/g, '');
-        val = '+91' + digits;
+        digits = val.slice(3).replace(/\D/g, '');
       }
+
+      // Enforce: first digit after +91 must be 7, 8, or 9
+      if (digits.length > 0 && !['7', '8', '9'].includes(digits[0])) {
+        return;
+      }
+      
+      val = '+91' + digits;
       setFormData({ ...formData, [name]: val.slice(0, 13) });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -76,8 +83,8 @@ const Register = () => {
     }
 
     // Contact Number Validation
-    if (formData.contactNo && !/^\+91\d{10}$/.test(formData.contactNo)) {
-      newErrors.contactNo = 'Contact number should start with +91 followed by a valid 10 digit mobile number';
+    if (formData.contactNo && !/^\+91[789]\d{9}$/.test(formData.contactNo)) {
+      newErrors.contactNo = 'Contact number should start with +91 followed by 7, 8, or 9 and a valid 10-digit number';
     }
 
     // Office Location Validation

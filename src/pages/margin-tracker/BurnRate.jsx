@@ -24,15 +24,34 @@ const burnData = [
 ];
 
 const BurnRate = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
   const navigate = useNavigate();
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   const handleActionClick = (action) => {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role?.toLowerCase() === 'hr') {
+      alert(`Unauthorized: ${currentUser.role}s cannot perform this action.`);
+      return;
+    }
     if (action.label === 'Resource Swap') {
       navigate('/bench-management/reallocation-suggestions');
     } else {
       alert(`Mitigation Action "${action.label}" initiated.\nExpected impact: ${action.impact}`);
     }
+  };
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role?.toLowerCase() === 'hr') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
+      return;
+    }
+    exportToCSV(burnData, 'Burn_Rate_Analysis.csv');
   };
 
   return (
@@ -45,13 +64,15 @@ const BurnRate = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Track daily expenditure velocity to prevent budget overruns.</p>
         </div>
-        <button 
-          onClick={() => exportToCSV(burnData, 'Burn_Rate_Analysis.csv')}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Viewers' && currentUser?.role?.toLowerCase() !== 'hr' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       {/* Burn Velocity Chart */}
@@ -108,7 +129,7 @@ const BurnRate = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Insights */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`${currentUser?.role === 'Team Lead' ? 'lg:col-span-3' : 'lg:col-span-2'} grid grid-cols-1 md:grid-cols-2 gap-6`}>
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden group transition-all">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
               <Clock className="w-16 h-16 text-rose-600" />
@@ -134,28 +155,30 @@ const BurnRate = () => {
         </div>
 
         {/* Action Center */}
-        <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
-          <h4 className="text-slate-100 font-bold text-lg mb-6">Mitigation Actions</h4>
-          <div className="space-y-4">
-            {[
-              { label: 'Optimize Overtime', impact: 'Save ₹45k/mo', status: 'Pending' },
-              { label: 'Resource Swap', impact: 'Save ₹120k/mo', status: 'Ready' },
-              { label: 'Vendor Negotiation', impact: 'Save ₹15k/mo', status: 'In Progress' }
-            ].map((action, i) => (
-              <div 
-                key={i} 
-                onClick={() => handleActionClick(action)}
-                className="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:bg-slate-800 transition-all cursor-pointer"
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-bold text-slate-200">{action.label}</span>
-                  <span className="text-[10px] font-black text-primary-400 uppercase">{action.status}</span>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Viewers' && currentUser?.role?.toLowerCase() !== 'hr' && (
+          <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
+            <h4 className="text-slate-100 font-bold text-lg mb-6">Mitigation Actions</h4>
+            <div className="space-y-4">
+              {[
+                { label: 'Optimize Overtime', impact: 'Save ₹45k/mo', status: 'Pending' },
+                { label: 'Resource Swap', impact: 'Save ₹120k/mo', status: 'Ready' },
+                { label: 'Vendor Negotiation', impact: 'Save ₹15k/mo', status: 'In Progress' }
+              ].map((action, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => handleActionClick(action)}
+                  className="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:bg-slate-800 transition-all cursor-pointer"
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-bold text-slate-200">{action.label}</span>
+                    <span className="text-[10px] font-black text-primary-400 uppercase">{action.status}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-medium">{action.impact}</p>
                 </div>
-                <p className="text-[10px] text-slate-400 font-medium">{action.impact}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

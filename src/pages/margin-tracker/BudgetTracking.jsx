@@ -22,10 +22,25 @@ const budgetData = [
 ];
 
 const BudgetTracking = () => {
-  const navigate = useNavigate();
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  return (
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role?.toLowerCase() === 'hr') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
+      return;
+    }
+    exportToCSV(budgetData, 'Budget_Analysis.csv');
+  };
+
+   const navigate = useNavigate();
+   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
+   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="budget-tracking-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -35,15 +50,17 @@ const BudgetTracking = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Compare allocated budgets against actual expenditures across projects.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => exportToCSV(budgetData, 'Budget_Analysis.csv')}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-        </div>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Viewers' && currentUser?.role?.toLowerCase() !== 'hr' && (
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Overview Chart */}

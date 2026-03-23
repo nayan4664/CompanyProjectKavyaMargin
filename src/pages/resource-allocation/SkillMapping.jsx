@@ -11,6 +11,13 @@ const skillData = [
 ];
 
 const SkillMapping = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    setCurrentUser(user);
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [filters, setFilters] = useState({
@@ -42,6 +49,14 @@ const SkillMapping = () => {
     return matchesSearch && matchesLevel && matchesSkill && matchesExp;
   });
 
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role?.toLowerCase() === 'hr') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
+      return;
+    }
+    exportToCSV(skillData, 'Skill_Matrix.csv');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -52,13 +67,15 @@ const SkillMapping = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Inventory and analysis of core competencies across the workforce.</p>
         </div>
-        <button 
-          onClick={() => exportToCSV(skillData, 'Skill_Matrix.csv')}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       {/* Skill Categories */}

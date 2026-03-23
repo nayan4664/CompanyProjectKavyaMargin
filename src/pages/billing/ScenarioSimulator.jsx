@@ -78,13 +78,15 @@ const ScenarioSimulator = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-bold tracking-wide">Model "What-If" scenarios to predict the impact of rate or resource changes.</p>
         </div>
-        <button 
-          onClick={handleExport}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full md:w-auto"
-        >
-          <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
-          EXPORT CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full md:w-auto"
+          >
+            <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+            EXPORT CSV
+          </button>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -96,9 +98,10 @@ const ScenarioSimulator = () => {
               <label className="text-xs font-black uppercase tracking-widest text-slate-500">Scenario Name</label>
               <input 
                 type="text" 
+                disabled={currentUser?.role === 'Team Lead'}
                 value={simulation.name}
                 onChange={(e) => setSimulation({ ...simulation, name: e.target.value })}
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl py-3 px-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div className="space-y-4">
@@ -110,9 +113,10 @@ const ScenarioSimulator = () => {
                 type="range" 
                 min="20" 
                 max="150" 
+                disabled={currentUser?.role === 'Team Lead'}
                 value={simulation.billingRate}
                 onChange={(e) => setSimulation({ ...simulation, billingRate: parseInt(e.target.value) })}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div className="space-y-4">
@@ -124,27 +128,30 @@ const ScenarioSimulator = () => {
                 type="range" 
                 min="50" 
                 max="100" 
+                disabled={currentUser?.role === 'Team Lead'}
                 value={simulation.utilization}
                 onChange={(e) => setSimulation({ ...simulation, utilization: parseInt(e.target.value) })}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
-            <div className="pt-6 flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={runSimulation}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-black text-white transition-all shadow-xl shadow-blue-500/20 group"
-              >
-                <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
-                RUN MODEL
-              </button>
-              <button 
-                onClick={handleReset}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-sm font-black text-slate-300 transition-all"
-              >
-                <RotateCcw className="w-4 h-4" />
-                RESET
-              </button>
-            </div>
+            {currentUser?.role !== 'Team Lead' && (
+              <div className="pt-6 flex flex-col sm:flex-row gap-3">
+                <button 
+                  onClick={runSimulation}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-black text-white transition-all shadow-xl shadow-blue-500/20 group"
+                >
+                  <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
+                  RUN MODEL
+                </button>
+                <button 
+                  onClick={handleReset}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-sm font-black text-slate-300 transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  RESET
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

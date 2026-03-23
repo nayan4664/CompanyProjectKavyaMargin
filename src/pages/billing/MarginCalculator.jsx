@@ -11,6 +11,8 @@ const MarginCalculator = () => {
     setCurrentUser(user);
   }, []);
 
+  const isViewOnly = currentUser?.role === 'Team Lead';
+
   const handleExport = () => {
     if (currentUser?.role === 'Team Lead') {
       alert('Unauthorized: Team Leads cannot download reports.');
@@ -83,13 +85,15 @@ const MarginCalculator = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Quickly calculate project margins based on billing rates and resource costs.</p>
         </div>
-        <button 
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {!isViewOnly && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -97,7 +101,7 @@ const MarginCalculator = () => {
         <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-sm space-y-6 transition-all">
           <h3 className="text-lg font-bold text-slate-100 mb-2 flex items-center gap-2">
             <RefreshCw className="w-4 h-4 text-primary-500" />
-            Adjust Parameters
+            {isViewOnly ? 'Calculation Parameters' : 'Adjust Parameters'}
           </h3>
           
           <div className="space-y-4">
@@ -106,13 +110,14 @@ const MarginCalculator = () => {
               <input 
                 type="number" 
                 min="0"
+                disabled={isViewOnly}
                 value={inputs.billingRate}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   if (val < 0) return;
                   setFormData({ ...inputs, billingRate: val });
                 }}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
               />
             </div>
             <div className="space-y-2">
@@ -120,13 +125,14 @@ const MarginCalculator = () => {
               <input 
                 type="number" 
                 min="0"
+                disabled={isViewOnly}
                 value={inputs.resourceCost}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   if (val < 0) return;
                   setFormData({ ...inputs, resourceCost: val });
                 }}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
               />
             </div>
             <div className="space-y-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800">
@@ -152,9 +158,10 @@ const MarginCalculator = () => {
                   min="0" 
                   max="100"
                   step="1"
+                  disabled={isViewOnly}
                   value={inputs.utilization}
                   onChange={(e) => setFormData({ ...inputs, utilization: Number(e.target.value) })}
-                  className="relative z-10 w-full h-1.5 bg-transparent appearance-none cursor-pointer block [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary-500 [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary-500 [&::-moz-range-thumb]:shadow-lg" 
+                  className="relative z-10 w-full h-1.5 bg-transparent appearance-none cursor-pointer block [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary-500 [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary-500 [&::-moz-range-thumb]:shadow-lg disabled:cursor-not-allowed" 
                 />
                 <div className="flex justify-between text-[10px] font-black text-slate-500 mt-4 px-1 uppercase tracking-widest">
                   <span>0%</span>
@@ -168,13 +175,14 @@ const MarginCalculator = () => {
               <input 
                 type="number" 
                 min="0"
+                disabled={isViewOnly}
                 value={inputs.overhead}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   if (val < 0) return;
                   setFormData({ ...inputs, overhead: val });
                 }}
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
               />
             </div>
           </div>
@@ -238,13 +246,15 @@ const MarginCalculator = () => {
                   <span className="text-primary-400 text-xl font-black">{formatCurrency(results.margin)}</span>
                 </div>
               </div>
-              <button 
-                onClick={handleSaveToScenarios}
-                className="w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
-              >
-                Save to Scenarios
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {!isViewOnly && (
+                <button 
+                  onClick={handleSaveToScenarios}
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  Save to Scenarios
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>

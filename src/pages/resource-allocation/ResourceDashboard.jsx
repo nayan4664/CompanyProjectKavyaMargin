@@ -36,6 +36,14 @@ const ResourceDashboard = () => {
     setCurrentUser(user);
   }, []);
 
+  const handleExport = () => {
+    if (currentUser?.role === 'Team Lead' || currentUser?.role?.toLowerCase() === 'hr') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
+      return;
+    }
+    exportToCSV(allocationData, 'Resource_Allocation_Report.csv');
+  };
+
   return (
     <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700" id="resource-dashboard-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -46,13 +54,15 @@ const ResourceDashboard = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-bold tracking-wide">Real-time overview of workforce distribution and utilization.</p>
         </div>
-        <button 
-          onClick={() => exportToCSV(allocationData, 'Resource_Allocation_Report.csv')}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full md:w-auto"
-        >
-          <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
-          EXPORT CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-black text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-xl group w-full md:w-auto"
+          >
+            <Download className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+            EXPORT CSV
+          </button>
+        )}
       </header>
 
       {/* Stats Cards */}

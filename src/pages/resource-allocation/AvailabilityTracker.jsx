@@ -20,8 +20,8 @@ const AvailabilityTracker = () => {
   }, []);
 
   const handleExport = () => {
-    if (currentUser?.role === 'Team Lead') {
-      alert('Unauthorized: Team Leads cannot download reports.');
+    if (currentUser?.role === 'Team Lead' || currentUser?.role?.toLowerCase() === 'hr') {
+      alert(`Unauthorized: ${currentUser.role}s cannot download reports.`);
       return;
     }
     exportToCSV(availabilityData, 'Resource_Availability.csv');
@@ -42,13 +42,15 @@ const AvailabilityTracker = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Monitor upcoming roll-offs and resource availability for future planning.</p>
         </div>
-        <button 
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       {/* Release Timeline Summary */}
@@ -127,10 +129,12 @@ const AvailabilityTracker = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-blue-400 hover:text-blue-300 font-bold text-xs flex items-center justify-end gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                      Request Allocation
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
+                    {currentUser?.role !== 'Team Lead' && currentUser?.role?.toLowerCase() !== 'hr' && (
+                      <button className="text-blue-400 hover:text-blue-300 font-bold text-xs flex items-center justify-end gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                        Request Allocation
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

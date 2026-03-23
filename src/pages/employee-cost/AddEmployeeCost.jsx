@@ -37,6 +37,8 @@ const AddEmployeeCost = () => {
     }
   }, [id, navigate]);
 
+  const isViewOnly = currentUser?.role === 'Team Lead' || currentUser?.role === 'Project Manager';
+
   const fetchEmployeeData = async (employeeId) => {
     try {
       setLoading(true);
@@ -162,10 +164,10 @@ const AddEmployeeCost = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
             <UserPlus className="w-8 h-8 text-primary-600" />
-            {isEditMode ? 'Edit Employee Cost' : 'Add Employee Cost'}
+            {isViewOnly ? (isEditMode ? 'View Employee Cost' : 'Employee Cost Details') : (isEditMode ? 'Edit Employee Cost' : 'Add Employee Cost')}
           </h1>
           <p className="text-slate-400 mt-1 font-medium">
-            {isEditMode ? 'Update existing resource cost configuration.' : 'Onboard a new resource and configure their cost structure.'}
+            {isViewOnly ? 'Review resource cost configuration and details.' : (isEditMode ? 'Update existing resource cost configuration.' : 'Onboard a new resource and configure their cost structure.')}
           </p>
         </div>
       </header>
@@ -185,9 +187,10 @@ const AddEmployeeCost = () => {
                   type="text" 
                   name="firstName"
                   required
+                  disabled={isViewOnly}
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                 />
               </div>
               <div className="space-y-2">
@@ -196,9 +199,10 @@ const AddEmployeeCost = () => {
                   type="text" 
                   name="lastName"
                   required
+                  disabled={isViewOnly}
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                 />
               </div>
               <div className="space-y-2">
@@ -207,9 +211,10 @@ const AddEmployeeCost = () => {
                   type="email" 
                   name="email"
                   required
+                  disabled={isViewOnly}
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                 />
               </div>
               <div className="space-y-2">
@@ -220,9 +225,10 @@ const AddEmployeeCost = () => {
                     type="text" 
                     name="role"
                     required
+                    disabled={isViewOnly}
                     value={formData.role}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                   />
                 </div>
               </div>
@@ -233,9 +239,10 @@ const AddEmployeeCost = () => {
                   <select 
                     name="department"
                     required
+                    disabled={isViewOnly}
                     value={formData.department}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 appearance-none"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="Design">Design</option>
                     <option value="Product">Product</option>
@@ -262,10 +269,11 @@ const AddEmployeeCost = () => {
                     type="number" 
                     name="ctc"
                     required
+                    disabled={isViewOnly}
                     min="0"
                     value={formData.ctc}
                     onChange={handleInputChange}
-                    className="w-full pl-8 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                    className="w-full pl-8 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                   />
                 </div>
               </div>
@@ -274,10 +282,11 @@ const AddEmployeeCost = () => {
                 <input 
                   type="number" 
                   name="variablePay"
+                  disabled={isViewOnly}
                   min="0"
                   value={formData.variablePay}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                 />
               </div>
               <div className="space-y-2">
@@ -288,9 +297,10 @@ const AddEmployeeCost = () => {
                     type="date" 
                     name="joiningDate"
                     required
+                    disabled={isViewOnly}
                     value={formData.joiningDate}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200" 
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500/20 text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                   />
                 </div>
               </div>
@@ -303,16 +313,18 @@ const AddEmployeeCost = () => {
               onClick={() => navigate('/employee-cost/list')}
               className="px-8 py-3 bg-slate-800 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"
             >
-              Cancel
+              {isViewOnly ? 'Back' : 'Cancel'}
             </button>
-            <button 
-              type="submit" 
-              disabled={loading}
-              className={`px-8 py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              <Save className="w-4 h-4" />
-              {loading ? 'Saving...' : (isEditMode ? 'Update Employee Cost' : 'Save Employee Cost')}
-            </button>
+            {!isViewOnly && (
+              <button 
+                type="submit" 
+                disabled={loading}
+                className={`px-8 py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                <Save className="w-4 h-4" />
+                {loading ? 'Saving...' : (isEditMode ? 'Update Employee Cost' : 'Save Employee Cost')}
+              </button>
+            )}
           </div>
         </form>
       </div>

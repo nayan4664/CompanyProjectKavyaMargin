@@ -15,13 +15,14 @@ const UploadContract = () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
     
-    // Redirect if unauthorized
-    if (user?.role === 'Project Manager' || user?.role === 'Team Lead' || user?.role === 'HR' || user?.role === 'Viewers') {
+    // Redirect if unauthorized (Team Lead, HR and Viewers should not access this page at all)
+    if (user?.role === 'Team Lead' || user?.role === 'HR' || user?.role === 'Viewers') {
       navigate('/dashboard');
     }
   }, [navigate]);
 
   const handleDrag = (e) => {
+    if (currentUser?.role === 'Project Manager') return;
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -32,6 +33,7 @@ const UploadContract = () => {
   };
 
   const handleDrop = (e) => {
+    if (currentUser?.role === 'Project Manager') return;
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -48,6 +50,10 @@ const UploadContract = () => {
   };
 
   const handleFileChange = (e) => {
+    if (currentUser?.role === 'Project Manager') {
+      alert('Unauthorized: Project Managers have read-only access and cannot upload contracts.');
+      return;
+    }
     if (e.target.files && e.target.files[0]) {
       const newFile = {
         name: e.target.files[0].name,
@@ -79,20 +85,26 @@ const UploadContract = () => {
             onDrop={handleDrop}
             className={`relative h-80 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center transition-all ${
               dragActive ? 'border-blue-500 bg-blue-500/10 scale-[1.01]' : 'border-slate-800 bg-slate-900/50 backdrop-blur-xl'
-            }`}
+            } ${currentUser?.role === 'Project Manager' ? 'cursor-not-allowed opacity-75' : ''}`}
           >
             <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mb-4">
               <Upload className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-bold text-slate-100">Drag & Drop Contracts</h3>
-            <p className="text-sm text-slate-400 mt-1 font-medium">or click to browse from your computer</p>
+            <h3 className="text-lg font-bold text-slate-100">
+              {currentUser?.role === 'Project Manager' ? 'Upload Restricted' : 'Drag & Drop Contracts'}
+            </h3>
+            <p className="text-sm text-slate-400 mt-1 font-medium">
+              {currentUser?.role === 'Project Manager' ? 'Project Managers have read-only access.' : 'or click to browse from your computer'}
+            </p>
             <p className="text-[10px] text-slate-500 mt-4 uppercase font-bold tracking-widest">Supports PDF, DOCX, TXT (Max 25MB)</p>
-            <input 
-              type="file" 
-              className="absolute inset-0 opacity-0 cursor-pointer" 
-              onChange={handleFileChange}
-              accept=".pdf,.docx,.txt"
-            />
+            {currentUser?.role !== 'Project Manager' && (
+              <input 
+                type="file" 
+                className="absolute inset-0 opacity-0 cursor-pointer" 
+                onChange={handleFileChange}
+                accept=".pdf,.docx,.txt"
+              />
+            )}
           </div>
 
           {/* Recent Uploads */}

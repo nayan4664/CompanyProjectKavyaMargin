@@ -33,13 +33,14 @@ const initialRiskData = [
 ];
 
 const RiskAnalysis = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [riskData] = useState(initialRiskData);
   const [filterLevel, setFilterLevel] = useState('All');
 
-  const filteredRisks = riskData.filter(r => {
-    const matchesSearch = !searchTerm || r.name.toLowerCase().includes(searchTerm.toLowerCase().trim());
+  const filteredRisks = initialRiskData.filter(r => {
+    const matchesSearch = !searchTerm || 
+      r.name.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+      r.category.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+      r.action.toLowerCase().includes(searchTerm.toLowerCase().trim());
     const matchesLevel = filterLevel === 'All' || r.impact === filterLevel;
     return matchesSearch && matchesLevel;
   });
@@ -54,9 +55,9 @@ const RiskAnalysis = () => {
   };
 
   const chartData = [
-    { name: 'High', count: riskData.filter(r => r.impact === 'High').length, color: '#ef4444' },
-    { name: 'Medium', count: riskData.filter(r => r.impact === 'Medium').length, color: '#f59e0b' },
-    { name: 'Low', count: riskData.filter(r => r.impact === 'Low').length, color: '#10b981' },
+    { name: 'High', count: initialRiskData.filter(r => r.impact === 'High').length, color: '#ef4444' },
+    { name: 'Medium', count: initialRiskData.filter(r => r.impact === 'Medium').length, color: '#f59e0b' },
+    { name: 'Low', count: initialRiskData.filter(r => r.impact === 'Low').length, color: '#10b981' },
   ];
 
   return (
@@ -177,35 +178,46 @@ const RiskAnalysis = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
-              {filteredRisks.map((risk) => (
-                <tr key={risk.id} className="group hover:bg-slate-800/20 transition-all cursor-pointer">
-                  <td className="px-6 py-5">
-                    <p className="text-sm font-black text-white group-hover:text-blue-500 transition-colors">{risk.name}</p>
-                    <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{risk.category}</p>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getRiskColor(risk.impact)}`}>
-                      {risk.impact}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-sm font-bold text-slate-400">
-                    {risk.probability}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-300 group-hover:text-blue-400 transition-colors">
-                      <Target className="w-4 h-4 text-blue-500" />
-                      {risk.action}
+              {filteredRisks.length > 0 ? (
+                filteredRisks.map((risk) => (
+                  <tr key={risk.id} className="group hover:bg-slate-800/20 transition-all cursor-pointer">
+                    <td className="px-6 py-5">
+                      <p className="text-sm font-black text-white group-hover:text-blue-500 transition-colors">{risk.name}</p>
+                      <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{risk.category}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getRiskColor(risk.impact)}`}>
+                        {risk.impact}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-sm font-bold text-slate-400">
+                      {risk.probability}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-300 group-hover:text-blue-400 transition-colors">
+                        <Target className="w-4 h-4 text-blue-500" />
+                        {risk.action}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 text-right">
+                      <span className={`text-lg font-black ${
+                        risk.score > 70 ? 'text-rose-500' : risk.score > 40 ? 'text-amber-500' : 'text-emerald-500'
+                      }`}>
+                        {risk.score}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2 opacity-50">
+                      <Search className="w-8 h-8 text-slate-500" />
+                      <p className="text-sm font-bold text-slate-400">No risks found matching your criteria.</p>
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-right">
-                    <span className={`text-lg font-black ${
-                      risk.score > 70 ? 'text-rose-500' : risk.score > 40 ? 'text-amber-500' : 'text-emerald-500'
-                    }`}>
-                      {risk.score}
-                    </span>
-                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

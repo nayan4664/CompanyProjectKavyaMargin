@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IndianRupee, Plus, Trash2, CheckCircle2, Info, Download, TrendingUp } from 'lucide-react';
 import { exportToCSV } from '../../utils/exportUtils';
 
@@ -12,9 +12,9 @@ const BillingModel = () => {
 
   const [newModel, setNewModel] = useState({ name: '', description: '', margin: '' });
   const [errors, setErrors] = useState({});
-  const [currentUser, setCurrentUser] = React.useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
   }, []);
@@ -73,77 +73,81 @@ const BillingModel = () => {
           </h1>
           <p className="text-slate-400 mt-2 font-medium">Configure and manage various billing structures for your projects.</p>
         </div>
-        <button 
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {currentUser?.role !== 'Team Lead' && (
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Add New Model */}
-        <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm h-fit transition-all">
-          <h3 className="text-lg font-bold text-slate-100 mb-6">Add New Model</h3>
-          <form onSubmit={handleAddModel} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">Model Name</label>
-              <input 
-                type="text" 
-                placeholder="e.g. Hybrid Model"
-                value={newModel.name}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Only allow letters, spaces, and basic punctuation for model names (no numbers)
-                  if (/[0-9]/.test(value)) return;
-                  setNewModel({ ...newModel, name: value });
-                  if (errors.name) setErrors({ ...errors, name: '' });
-                }}
-                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
-              />
-              {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">Target Margin (%)</label>
-              <input 
-                type="text" 
-                placeholder="e.g. 30-35%"
-                value={newModel.margin}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Only allow numbers, %, -, and spaces (no alphabets)
-                  if (/[a-zA-Z]/.test(value)) return;
-                  setNewModel({ ...newModel, margin: value });
-                  if (errors.margin) setErrors({ ...errors, margin: '' });
-                }}
-                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.margin ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
-              />
-              {errors.margin && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.margin}</p>}
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-300 ml-1">Description</label>
-              <textarea 
-                placeholder="Briefly describe the billing logic..."
-                value={newModel.description}
-                onChange={(e) => {
-                  setNewModel({ ...newModel, description: e.target.value });
-                  if (errors.description) setErrors({ ...errors, description: '' });
-                }}
-                rows="3"
-                className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.description ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 resize-none`}
-              ></textarea>
-              {errors.description && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.description}</p>}
-            </div>
-            <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
-              <Plus className="w-4 h-4" />
-              Add Billing Model
-            </button>
-          </form>
-        </div>
+        {currentUser?.role !== 'Team Lead' && (
+          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm h-fit transition-all">
+            <h3 className="text-lg font-bold text-slate-100 mb-6">Add New Model</h3>
+            <form onSubmit={handleAddModel} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">Model Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Hybrid Model"
+                  value={newModel.name}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow letters, spaces, and basic punctuation for model names (no numbers)
+                    if (/[0-9]/.test(value)) return;
+                    setNewModel({ ...newModel, name: value });
+                    if (errors.name) setErrors({ ...errors, name: '' });
+                  }}
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                />
+                {errors.name && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.name}</p>}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">Target Margin (%)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 30-35%"
+                  value={newModel.margin}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow numbers, %, -, and spaces (no alphabets)
+                    if (/[a-zA-Z]/.test(value)) return;
+                    setNewModel({ ...newModel, margin: value });
+                    if (errors.margin) setErrors({ ...errors, margin: '' });
+                  }}
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.margin ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200`} 
+                />
+                {errors.margin && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.margin}</p>}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">Description</label>
+                <textarea 
+                  placeholder="Briefly describe the billing logic..."
+                  value={newModel.description}
+                  onChange={(e) => {
+                    setNewModel({ ...newModel, description: e.target.value });
+                    if (errors.description) setErrors({ ...errors, description: '' });
+                  }}
+                  rows="3"
+                  className={`w-full px-4 py-2.5 bg-slate-800/50 border ${errors.description ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-700 focus:ring-blue-500/20'} rounded-xl text-sm outline-none focus:ring-2 text-slate-200 resize-none`}
+                ></textarea>
+                {errors.description && <p className="text-[10px] text-rose-500 font-bold ml-1">{errors.description}</p>}
+              </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
+                <Plus className="w-4 h-4" />
+                Add Billing Model
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* List of Models */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className={`${currentUser?.role === 'Team Lead' ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-4`}>
           {models.map((model) => (
             <div key={model.id} className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm flex items-center justify-between group hover:border-blue-500/50 transition-all">
               <div className="flex gap-4">
@@ -166,12 +170,14 @@ const BillingModel = () => {
                   </div>
                 </div>
               </div>
-              <button 
-                onClick={() => deleteModel(model.id)}
-                className="p-2 text-slate-600 hover:text-rose-400 hover:bg-rose-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+              {currentUser?.role !== 'Team Lead' && (
+                <button 
+                  onClick={() => deleteModel(model.id)}
+                  className="p-2 text-slate-600 hover:text-rose-400 hover:bg-rose-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
             </div>
           ))}
 
