@@ -14,21 +14,11 @@ import {
 } from "recharts";
 
 import { exportToCSV, exportToXML } from "../../utils/exportUtils";
-
-/* Revenue Data */
-const revenueData = [
-  { month: "Jan", year: 2025, confirmed: 3200000, weighted: 3500000, target: 3600000 },
-  { month: "Feb", year: 2025, confirmed: 3000000, weighted: 3400000, target: 3500000 },
-  { month: "Mar", year: 2025, confirmed: 4200000, weighted: 4700000, target: 4500000 },
-  { month: "Apr", year: 2025, confirmed: 3900000, weighted: 4300000, target: 4200000 },
-  { month: "May", year: 2025, confirmed: 4100000, weighted: 4600000, target: 4500000 },
-  { month: "Jun", year: 2025, confirmed: 4500000, weighted: 5000000, target: 4700000 },
-  { month: "Jul", year: 2024, confirmed: 3500000, weighted: 3900000, target: 3800000 },
-  { month: "Aug", year: 2024, confirmed: 3700000, weighted: 4100000, target: 4000000 },
-  { month: "Sep", year: 2024, confirmed: 3600000, weighted: 4200000, target: 4100000 },
-];
+import { forecastAPI } from "../../services/api";
 
 const RevenueDashboard = () => {
+  const [revenueData, setRevenueData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [selectedYear, setSelectedYear] = useState("All");
   const [currentUser, setCurrentUser] = useState(null);
@@ -36,7 +26,20 @@ const RevenueDashboard = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
+    fetchRevenue();
   }, []);
+
+  const fetchRevenue = async () => {
+    try {
+      setLoading(true);
+      const response = await forecastAPI.getRevenue();
+      setRevenueData(response.data);
+    } catch (err) {
+      console.error("Error fetching revenue data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* FILTER DATA */
   const filteredData = revenueData.filter((item) => {

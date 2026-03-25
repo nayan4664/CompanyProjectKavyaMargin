@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IndianRupee,
   Search,
@@ -20,72 +20,75 @@ import {
 } from "recharts";
 
 import { exportToCSV } from "../../utils/exportUtils";
-
-/* PAYMENT DATA */
-const paymentHistory = [
-  {
-    id: 1,
-    client: "TechCorp",
-    amount: "₹4,50,000",
-    date: "2026-03-01",
-    method: "Wire Transfer",
-    status: "Completed",
-  },
-  {
-    id: 2,
-    client: "GlobalSoft",
-    amount: "₹2,10,000",
-    date: "2026-02-25",
-    method: "Credit Card",
-    status: "Completed",
-  },
-  {
-    id: 3,
-    client: "SkyHigh",
-    amount: "₹8,40,000",
-    date: "2026-03-10",
-    method: "Wire Transfer",
-    status: "Processing",
-  },
-  {
-    id: 4,
-    client: "FitTrack",
-    amount: "₹3,20,000",
-    date: "2026-02-20",
-    method: "ACH",
-    status: "Completed",
-  },
-];
-
-/* CHART DATA */
-const collectionData = [
-  { month: "Jan", collected: 1200000, pending: 200000 },
-  { month: "Feb", collected: 1450000, pending: 350000 },
-  { month: "Mar", collected: 900000, pending: 800000 },
-];
+import { invoiceAPI } from "../../services/api";
 
 const PaymentTracking = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  React.useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("currentUser"));
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) setCurrentUser(user);
+    fetchPayments();
   }, []);
+
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const response = await invoiceAPI.getAll();
+      // Map invoice data to payment history format
+      const mappedPayments = response.data.map(inv => ({
+        id: inv._id,
+        client: inv.clientName,
+        amount: `₹${inv.items.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}`,
+        date: new Date(inv.date).toISOString().split('T')[0],
+        method: "Direct Deposit",
+        status: inv.status === 'Paid' ? 'Completed' : 'Pending',
+        rawAmount: inv.items.reduce((sum, item) => sum + item.amount, 0)
+      }));
+      setPaymentHistory(mappedPayments);
+    } catch (err) {
+      console.error("Error fetching payments:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* FILTER PAYMENTS */
   const filteredPayments = paymentHistory.filter((p) =>
-    p.client.toLowerCase().includes(searchTerm.toLowerCase())
+    p.client?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   /* TOTALS */
   const totalCollected = paymentHistory
     .filter((p) => p.status === "Completed")
-    .reduce((acc, p) => acc + Number(p.amount.replace(/[^0-9]/g, "")), 0);
+    .reduce((acc, p) => acc + p.rawAmount, 0);
 
   const totalPending = paymentHistory
     .filter((p) => p.status !== "Completed")
-    .reduce((acc, p) => acc + Number(p.amount.replace(/[^0-9]/g, "")), 0);
+    .reduce((acc, p) => acc + p.rawAmount, 0);
+
+  /* CHART DATA */
+  const getChartData = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const data = months.map(m => ({ month: m, collected: 0, pending: 0 }));
+    
+    paymentHistory.forEach(p => {
+      const monthIdx = new Date(p.date).getMonth();
+      if (p.status === "Completed") {
+        data[monthIdx].collected += p.rawAmount;
+      } else {
+        data[monthIdx].pending += p.rawAmount;
+      }
+    });
+    
+    // Filter out months with no data to keep chart clean
+    return data.filter(d => d.collected > 0 || d.pending > 0);
+  };
+
+  const collectionData = getChartData();
 
   /* SEND REMINDER FUNCTION */
   const sendReminders = () => {

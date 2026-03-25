@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AlertTriangle, 
   ShieldCheck, 
@@ -22,25 +22,35 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-
-const initialRiskData = [
-  { id: 1, name: 'Project Alpha Margin Leakage', impact: 'High', probability: '70%', score: 85, category: 'Financial', action: 'Shift 2 FTEs to Offshore' },
-  { id: 2, name: 'Resource Bench Duration', impact: 'Medium', probability: '40%', score: 45, category: 'Resource', action: 'Internal Skill Upskilling' },
-  { id: 3, name: 'Delayed Invoice Payment', impact: 'High', probability: '60%', score: 72, category: 'Financial', action: 'Automate Reminders' },
-  { id: 4, name: 'Offshore Ramp-up Delay', impact: 'Medium', probability: '80%', score: 64, category: 'Operations', action: 'Accelerate Hiring' },
-  { id: 5, name: 'Contract SLA Breach', impact: 'Low', probability: '20%', score: 18, category: 'Legal', action: 'Review Clause 4.2' },
-  { id: 6, name: 'Utilization Efficiency Drop', impact: 'Medium', probability: '50%', score: 52, category: 'Resource', action: 'Reassign from Bench' },
-];
+import { riskAPI } from '../../services/api';
 
 const RiskAnalysis = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('All');
+  const [risks, setRisks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredRisks = initialRiskData.filter(r => {
+  useEffect(() => {
+    fetchRisks();
+  }, []);
+
+  const fetchRisks = async () => {
+    try {
+      setLoading(true);
+      const response = await riskAPI.getAll();
+      setRisks(response.data);
+    } catch (err) {
+      console.error("Error fetching risks:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredRisks = risks.filter(r => {
     const matchesSearch = !searchTerm || 
-      r.name.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
-      r.category.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
-      r.action.toLowerCase().includes(searchTerm.toLowerCase().trim());
+      r.name?.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+      r.category?.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+      r.action?.toLowerCase().includes(searchTerm.toLowerCase().trim());
     const matchesLevel = filterLevel === 'All' || r.impact === filterLevel;
     return matchesSearch && matchesLevel;
   });
@@ -55,9 +65,9 @@ const RiskAnalysis = () => {
   };
 
   const chartData = [
-    { name: 'High', count: initialRiskData.filter(r => r.impact === 'High').length, color: '#ef4444' },
-    { name: 'Medium', count: initialRiskData.filter(r => r.impact === 'Medium').length, color: '#f59e0b' },
-    { name: 'Low', count: initialRiskData.filter(r => r.impact === 'Low').length, color: '#10b981' },
+    { name: 'High', count: risks.filter(r => r.impact === 'High').length, color: '#ef4444' },
+    { name: 'Medium', count: risks.filter(r => r.impact === 'Medium').length, color: '#f59e0b' },
+    { name: 'Low', count: risks.filter(r => r.impact === 'Low').length, color: '#10b981' },
   ];
 
   return (
@@ -102,7 +112,7 @@ const RiskAnalysis = () => {
               <AlertTriangle className="w-12 h-12 text-rose-500" />
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Critical Risks</p>
-            <h3 className="text-3xl font-black text-white mt-2">02</h3>
+            <h3 className="text-3xl font-black text-white mt-2">{risks.filter(r => r.impact === 'High').length.toString().padStart(2, '0')}</h3>
             <p className="text-xs font-bold text-rose-500 mt-2 flex items-center gap-1">
               <ShieldAlert className="w-3 h-3" />
               Requires Action
@@ -178,9 +188,13 @@ const RiskAnalysis = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
-              {filteredRisks.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center text-slate-500 font-bold tracking-widest uppercase text-[10px]">Loading AI risks...</td>
+                </tr>
+              ) : filteredRisks.length > 0 ? (
                 filteredRisks.map((risk) => (
-                  <tr key={risk.id} className="group hover:bg-slate-800/20 transition-all cursor-pointer">
+                  <tr key={risk._id} className="group hover:bg-slate-800/20 transition-all cursor-pointer">
                     <td className="px-6 py-5">
                       <p className="text-sm font-black text-white group-hover:text-blue-500 transition-colors">{risk.name}</p>
                       <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{risk.category}</p>

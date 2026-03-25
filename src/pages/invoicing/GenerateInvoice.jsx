@@ -1,12 +1,12 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Receipt, Save, ArrowLeft, Plus, Trash2, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { InvoiceContext } from '../../context/InvoiceContext';
 import { exportToPDF } from '../../utils/exportUtils';
+import { invoiceAPI } from '../../services/api';
 
 const GenerateInvoice = () => {
   const navigate = useNavigate();
-  const { addInvoice } = useContext(InvoiceContext);
+  const [loading, setLoading] = useState(false);
 
   const [currentUser, setCurrentUser] = useState(null);
   const isViewOnly = currentUser?.role === 'Project Manager';
@@ -59,18 +59,41 @@ const GenerateInvoice = () => {
   const tax = subtotal * (invoiceData.taxRate / 100);
   const total = subtotal + tax;
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    addInvoice({
-      id: invoiceData.invoiceId,
-      client: invoiceData.clientName,
-      project: invoiceData.project,
-      amount: `₹${total.toLocaleString()}`,
-      date: invoiceData.date,
-      dueDate: invoiceData.dueDate,
-      status: 'Pending'
-    });
-    navigate('/invoicing/list');
+    if (!invoiceData.clientName || !invoiceData.project || !invoiceData.dueDate) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const payload = {
+        invoiceId: invoiceData.invoiceId,
+        clientName: invoiceData.clientName,
+        project: invoiceData.project,
+        date: invoiceData.date,
+        dueDate: invoiceData.dueDate,
+        items: invoiceData.items.map(({ description, hours, rate, amount }) => ({
+          description,
+          hours,
+          rate,
+          amount
+        })),
+        taxRate: invoiceData.taxRate,
+        notes: invoiceData.notes,
+        status: 'Pending'
+      };
+
+      await invoiceAPI.create(payload);
+      alert('Invoice generated successfully!');
+      navigate('/invoicing/list');
+    } catch (err) {
+      console.error("Error creating invoice:", err);
+      alert(err.response?.data?.message || 'Failed to create invoice');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

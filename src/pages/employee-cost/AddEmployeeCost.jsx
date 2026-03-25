@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Save, ArrowLeft, DollarSign, Briefcase, Building2, Calendar, IndianRupee, Users, Layout } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { employeeAPI } from '../../services/api';
+import { useDashboard } from '../../context/DashboardContext';
 
 const AddEmployeeCost = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { refreshDashboard } = useDashboard();
   const [currentUser, setCurrentUser] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -144,6 +146,7 @@ const AddEmployeeCost = () => {
       } else {
         await employeeAPI.create(employeeData);
       }
+      refreshDashboard(); // Refresh dashboard data
 
       alert(isEditMode ? 'Employee cost data updated successfully!' : 'Employee cost data added successfully!');
       navigate('/employee-cost/list');

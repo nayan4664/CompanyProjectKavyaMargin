@@ -1,16 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle2, Download, FileText, ArrowRight } from 'lucide-react';
 import { exportToCSV } from '../../utils/exportUtils';
+import { contractAPI } from '../../services/api';
 
 const ContractInsights = () => {
-  const [currentUser, setCurrentUser] = React.useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [insights, setInsights] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
+    fetchInsights();
   }, []);
 
-  const insights = [
+  const fetchInsights = async () => {
+    try {
+      setLoading(true);
+      const response = await contractAPI.getAll();
+      // Flatten insights from all contracts
+      const allInsights = response.data.flatMap(contract => 
+        (contract.insights || []).map(insight => ({
+          ...insight,
+          contractName: contract.name,
+          _id: contract._id
+        }))
+      );
+      setInsights(allInsights);
+    } catch (err) {
+      console.error("Error fetching insights:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const defaultInsights = [
     {
       id: 1,
       type: 'Margin',
@@ -40,6 +64,8 @@ const ContractInsights = () => {
     }
   ];
 
+  const displayInsights = insights.length > 0 ? insights : defaultInsights;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="contract-insights-content">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -52,7 +78,7 @@ const ContractInsights = () => {
         </div>
         {currentUser?.role !== 'Team Lead' && currentUser?.role !== 'Project Manager' && (
           <button 
-            onClick={() => exportToCSV(insights, 'Contract_Insights_Report.csv')}
+            onClick={() => exportToCSV(displayInsights, 'Contract_Insights_Report.csv')}
             className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-800 transition-all shadow-sm"
           >
             <Download className="w-4 h-4" />
@@ -78,7 +104,7 @@ const ContractInsights = () => {
           </div>
           <div>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Flags</p>
-            <h3 className="text-xl font-black text-slate-100">02 Critical</h3>
+            <h3 className="text-xl font-black text-slate-100">{insights.filter(i => i.type === 'Risk').length.toString().padStart(2, '0')} Critical</h3>
           </div>
         </div>
         <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-sm flex items-center gap-4">
@@ -94,32 +120,39 @@ const ContractInsights = () => {
 
       {/* Detailed Insights List */}
       <div className="grid grid-cols-1 gap-6">
-        {insights.map((insight) => (
-          <div key={insight.id} className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm hover:border-blue-500/30 transition-all group relative overflow-hidden">
-            <div className={`absolute top-0 left-0 w-1.5 h-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500`} />
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/10 text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400`}>
-                    {insight.type}
-                  </span>
-                  <span className="text-xs font-bold text-slate-500 italic">{insight.status}</span>
+        {loading ? (
+          <div className="text-center py-12 text-slate-500 font-bold tracking-widest uppercase text-[10px]">Analyzing contracts...</div>
+        ) : (
+          displayInsights.map((insight, i) => (
+            <div key={insight.id || i} className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-800 shadow-sm hover:border-blue-500/30 transition-all group relative overflow-hidden">
+              <div className={`absolute top-0 left-0 w-1.5 h-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500`} />
+              <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-500/10 text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400`}>
+                      {insight.type}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500 italic">{insight.status}</span>
+                    {insight.contractName && (
+                      <span className="text-[10px] font-bold text-slate-600 ml-auto uppercase tracking-tighter">Source: {insight.contractName}</span>
+                    )}
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-100 mb-2">{insight.title}</h4>
+                  <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                    {insight.desc}
+                  </p>
                 </div>
-                <h4 className="text-xl font-bold text-slate-100 mb-2">{insight.title}</h4>
-                <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                  {insight.desc}
-                </p>
-              </div>
-              <div className="lg:w-64 shrink-0 flex flex-col justify-center items-start lg:items-end">
-                <p className={`text-lg font-black text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400`}>{insight.impact}</p>
-                <button className="mt-4 flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
-                  View Full Clause
-                  <ArrowRight className="w-3 h-3" />
-                </button>
+                <div className="lg:w-64 shrink-0 flex flex-col justify-center items-start lg:items-end">
+                  <p className={`text-lg font-black text-${insight.color === 'blue' ? 'blue' : insight.color === 'rose' ? 'rose' : 'emerald'}-400`}>{insight.impact}</p>
+                  <button className="mt-4 flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                    View Full Clause
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Download, Search, Filter, AlertCircle, CheckCircle2, IndianRupee } from 'lucide-react';
 import { 
   BarChart, 
@@ -11,28 +11,36 @@ import {
   Cell
 } from 'recharts';
 import { exportToCSV, exportToXML } from '../../utils/exportUtils';
-
-const projects = [
-  { id: 1, name: 'Project Alpha', client: 'TechCorp', margin: 32, revenue: '₹4.5M', status: 'On Track' },
-  { id: 2, name: 'Project Beta', client: 'GlobalSoft', margin: 18, revenue: '₹2.1M', status: 'At Risk' },
-  { id: 3, name: 'Mobile App', client: 'FitTrack', margin: 42, revenue: '₹3.2M', status: 'Exceeding' },
-  { id: 4, name: 'Cloud Migration', client: 'SkyHigh', margin: 25, revenue: '₹8.4M', status: 'On Track' },
-  { id: 5, name: 'ERP Sync', client: 'DataFlow', margin: 15, revenue: '₹1.8M', status: 'At Risk' },
-];
+import { marginAPI } from '../../services/api';
 
 const ProjectMarginDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     status: 'All',
     marginRange: 'All'
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
+    fetchProjects();
   }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await marginAPI.getAll();
+      setProjects(response.data);
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleExport = (type) => {
     if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role?.toLowerCase() === 'hr') {
@@ -44,8 +52,8 @@ const ProjectMarginDashboard = () => {
   };
 
   const filteredProjects = projects.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.client.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = p.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p.client?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = filters.status === 'All' || p.status === filters.status;
     
@@ -58,6 +66,19 @@ const ProjectMarginDashboard = () => {
 
     return matchesSearch && matchesStatus && matchesMargin;
   });
+
+  // Calculate dynamic stats
+  const avgMargin = projects.length > 0 
+    ? (projects.reduce((acc, curr) => acc + curr.margin, 0) / projects.length).toFixed(1) 
+    : 0;
+  
+  const totalRevenue = projects.length > 0 
+    ? projects.reduce((acc, curr) => {
+        // Extract number from "₹4.5M"
+        const val = parseFloat(curr.revenue.replace(/[^0-9.]/g, ''));
+        return acc + val;
+      }, 0).toFixed(1)
+    : 0;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500" id="project-margin-content">
@@ -139,7 +160,7 @@ const ProjectMarginDashboard = () => {
                 <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Avg. Portfolio Margin</span>
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               </div>
-              <p className="text-3xl font-black text-emerald-100 mt-2">28.4%</p>
+              <p className="text-3xl font-black text-emerald-100 mt-2">{avgMargin}%</p>
             </div>
             <div className="p-4 bg-rose-900/10 rounded-2xl border border-rose-900/20">
               <div className="flex justify-between items-center">
@@ -153,7 +174,7 @@ const ProjectMarginDashboard = () => {
                 <span className="text-xs font-bold text-primary-500 uppercase tracking-widest">Total Active Revenue</span>
                 <TrendingUp className="w-4 h-4 text-primary-500" />
               </div>
-              <p className="text-3xl font-black text-primary-100 mt-2">₹18.2M</p>
+              <p className="text-3xl font-black text-primary-100 mt-2">₹{totalRevenue}M</p>
             </div>
           </div>
         </div>
@@ -227,41 +248,51 @@ const ProjectMarginDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {filteredProjects.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-800/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-bold text-slate-200">{p.name}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-slate-400 font-medium">{p.client}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-black ${p.margin < 20 ? 'text-rose-500' : p.margin > 35 ? 'text-emerald-500' : 'text-primary-500'}`}>
-                        {p.margin}%
-                      </span>
-                      <div className="w-16 bg-slate-800 h-1.5 rounded-full overflow-hidden hidden sm:block">
-                        <div 
-                          className={`h-full rounded-full ${p.margin < 20 ? 'bg-rose-500' : p.margin > 35 ? 'bg-emerald-500' : 'bg-primary-500'}`}
-                          style={{ width: `${p.margin}%` }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-bold text-slate-200">{p.revenue}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                      p.status === 'Exceeding' ? 'bg-emerald-900/20 text-emerald-500' : 
-                      p.status === 'At Risk' ? 'bg-rose-900/20 text-rose-500' : 
-                      'bg-primary-900/20 text-primary-500'
-                    }`}>
-                      {p.status}
-                    </span>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center text-slate-500 font-bold tracking-widest uppercase text-[10px]">Loading margins...</td>
                 </tr>
-              ))}
+              ) : filteredProjects.length > 0 ? (
+                filteredProjects.map((p) => (
+                  <tr key={p._id} className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-bold text-slate-200">{p.name}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-slate-400 font-medium">{p.client}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-black ${p.margin < 20 ? 'text-rose-500' : p.margin > 35 ? 'text-emerald-500' : 'text-primary-500'}`}>
+                          {p.margin}%
+                        </span>
+                        <div className="w-16 bg-slate-800 h-1.5 rounded-full overflow-hidden hidden sm:block">
+                          <div 
+                            className={`h-full rounded-full ${p.margin < 20 ? 'bg-rose-500' : p.margin > 35 ? 'bg-emerald-500' : 'bg-primary-500'}`}
+                            style={{ width: `${p.margin}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-bold text-slate-200">{p.revenue}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                        p.status === 'Exceeding' ? 'bg-emerald-900/20 text-emerald-500' : 
+                        p.status === 'At Risk' ? 'bg-rose-900/20 text-rose-500' : 
+                        'bg-primary-900/20 text-primary-500'
+                      }`}>
+                        {p.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center text-slate-500 font-bold tracking-widest uppercase text-[10px]">No projects tracked yet.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

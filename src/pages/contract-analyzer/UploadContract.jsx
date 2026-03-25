@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, FileText, CheckCircle2, AlertCircle, X, ArrowRight, ShieldCheck, FileCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { contractAPI } from '../../services/api';
 
 const UploadContract = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([
-    { name: 'Service_Agreement_TechCorp.pdf', size: '2.4 MB', status: 'Analyzed', date: '2026-03-01' },
-    { name: 'SLA_Cloud_Migration.docx', size: '1.1 MB', status: 'Processing', date: '2026-03-05' },
-  ]);
+  const [loading, setLoading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -19,7 +18,39 @@ const UploadContract = () => {
     if (user?.role === 'Team Lead' || user?.role === 'HR' || user?.role === 'Viewers') {
       navigate('/dashboard');
     }
+
+    fetchContracts();
   }, [navigate]);
+
+  const fetchContracts = async () => {
+    try {
+      setLoading(true);
+      const response = await contractAPI.getAll();
+      setUploadedFiles(response.data);
+    } catch (err) {
+      console.error("Error fetching contracts:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uploadToBackend = async (file) => {
+    try {
+      const newFile = {
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
+        status: 'Processing',
+        date: new Date().toISOString().split('T')[0],
+        insights: []
+      };
+      
+      await contractAPI.create(newFile);
+      fetchContracts(); // Refresh the list
+    } catch (err) {
+      console.error("Error uploading contract metadata:", err);
+      alert("Failed to save contract information to database.");
+    }
+  };
 
   const handleDrag = (e) => {
     if (currentUser?.role === 'Project Manager') return;
@@ -32,36 +63,23 @@ const UploadContract = () => {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     if (currentUser?.role === 'Project Manager') return;
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      // Handle file upload logic here
-      const newFile = {
-        name: e.dataTransfer.files[0].name,
-        size: (e.dataTransfer.files[0].size / 1024 / 1024).toFixed(1) + ' MB',
-        status: 'Processing',
-        date: new Date().toISOString().split('T')[0]
-      };
-      setUploadedFiles(prev => [newFile, ...prev]);
+      await uploadToBackend(e.dataTransfer.files[0]);
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     if (currentUser?.role === 'Project Manager') {
       alert('Unauthorized: Project Managers have read-only access and cannot upload contracts.');
       return;
     }
     if (e.target.files && e.target.files[0]) {
-      const newFile = {
-        name: e.target.files[0].name,
-        size: (e.target.files[0].size / 1024 / 1024).toFixed(1) + ' MB',
-        status: 'Processing',
-        date: new Date().toISOString().split('T')[0]
-      };
-      setUploadedFiles(prev => [newFile, ...prev]);
+      await uploadToBackend(e.target.files[0]);
     }
   };
 

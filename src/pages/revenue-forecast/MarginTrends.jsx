@@ -15,31 +15,31 @@ import {
 import { exportToCSV } from "../../utils/exportUtils";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
-const allData = [
-  { month: "Jan", gross: 32, net: 24, target: 30 },
-  { month: "Feb", gross: 34, net: 26, target: 30 },
-  { month: "Mar", gross: 31, net: 22, target: 30 },
-  { month: "Apr", gross: 35, net: 28, target: 30 },
-  { month: "May", gross: 38, net: 31, target: 30 },
-  { month: "Jun", gross: 36, net: 29, target: 30 },
-  { month: "Jul", gross: 40, net: 33, target: 32 },
-  { month: "Aug", gross: 37, net: 30, target: 32 },
-  { month: "Sep", gross: 39, net: 34, target: 33 },
-  { month: "Oct", gross: 42, net: 36, target: 34 },
-  { month: "Nov", gross: 41, net: 35, target: 34 },
-  { month: "Dec", gross: 44, net: 38, target: 35 },
-];
+import { forecastAPI } from "../../services/api";
 
 const MarginTrends = () => {
-
+  const [allData, setAllData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("all");
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
+    fetchMarginTrends();
   }, []);
+
+  const fetchMarginTrends = async () => {
+    try {
+      setLoading(true);
+      const response = await forecastAPI.getMarginTrends();
+      setAllData(response.data);
+    } catch (err) {
+      console.error("Error fetching margin trends:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getFilteredData = () => {
 

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { exportToCSV, exportToXML } from '../../utils/exportUtils';
 import { Link } from 'react-router-dom';
+import { invoiceAPI } from '../../services/api';
 
 const StatCard = ({ title, value, color, icon }) => {
   return (
@@ -35,13 +36,8 @@ const StatCard = ({ title, value, color, icon }) => {
 };
 
 const InvoiceList = () => {
-  const [invoices, setInvoices] = useState([
-    { id: 'INV-2026-001', client: 'TechCorp', project: 'Project Alpha', amount: '₹4,50,000', date: '2026-03-01', dueDate: '2026-03-15', status: 'Paid' },
-    { id: 'INV-2026-002', client: 'GlobalSoft', project: 'Project Beta', amount: '₹2,10,000', date: '2026-03-02', dueDate: '2026-03-16', status: 'Pending' },
-    { id: 'INV-2026-003', client: 'SkyHigh', project: 'Cloud Migration', amount: '₹8,40,000', date: '2026-03-05', dueDate: '2026-03-20', status: 'Overdue' },
-    { id: 'INV-2026-004', client: 'FitTrack', project: 'Mobile App', amount: '₹3,20,000', date: '2026-03-07', dueDate: '2026-03-21', status: 'Pending' },
-  ]);
-
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [currentUser, setCurrentUser] = useState(null);
@@ -49,6 +45,7 @@ const InvoiceList = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
     if (user) setCurrentUser(user);
+    fetchInvoices();
   }, []);
 
   const fetchInvoices = async () => {
@@ -73,20 +70,66 @@ const InvoiceList = () => {
         await invoiceAPI.delete(id);
         fetchInvoices();
       } catch (err) {
+        console.error("Error deleting invoice:", err);
         alert("Error deleting invoice");
       }
     }
   };
 
+  const calculateTotal = (invoice) => {
+    const subtotal = invoice.items?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
+    const tax = subtotal * ((invoice.taxRate || 18) / 100);
+    return `₹${(subtotal + tax).toLocaleString()}`;
+  };
+
   const filteredInvoices = invoices.filter(inv => {
     const matchSearch = 
-      inv.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      inv.client.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      inv.project.toLowerCase().includes(searchTerm.toLowerCase());
+      inv.invoiceId?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      inv.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      inv.project?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatus = 
       statusFilter === "All" || inv.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const calculateStats = () => {
+    const totalInvoiced = invoices.reduce((acc, inv) => {
+      const subtotal = inv.items?.reduce((s, item) => s + (item.amount || 0), 0) || 0;
+      const tax = subtotal * ((inv.taxRate || 18) / 100);
+      return acc + subtotal + tax;
+    }, 0);
+
+    const paidAmount = invoices
+      .filter(inv => inv.status === 'Paid')
+      .reduce((acc, inv) => {
+        const subtotal = inv.items?.reduce((s, item) => s + (item.amount || 0), 0) || 0;
+        const tax = subtotal * ((inv.taxRate || 18) / 100);
+        return acc + subtotal + tax;
+      }, 0);
+
+    const pendingAmount = invoices
+      .filter(inv => inv.status === 'Pending')
+      .reduce((acc, inv) => {
+        const subtotal = inv.items?.reduce((s, item) => s + (item.amount || 0), 0) || 0;
+        const tax = subtotal * ((inv.taxRate || 18) / 100);
+        return acc + subtotal + tax;
+      }, 0);
+
+    const overdueAmount = invoices
+      .filter(inv => inv.status === 'Overdue')
+      .reduce((acc, inv) => {
+        const subtotal = inv.items?.reduce((s, item) => s + (item.amount || 0), 0) || 0;
+        const tax = subtotal * ((inv.taxRate || 18) / 100);
+        return acc + subtotal + tax;
+      }, 0);
+
+    return {
+      total: `₹${(totalInvoiced / 100000).toFixed(1)}L`,
+      paid: `₹${(paidAmount / 100000).toFixed(1)}L`,
+      pending: `₹${(pendingAmount / 100000).toFixed(1)}L`,
+      overdue: `₹${(overdueAmount / 100000).toFixed(1)}L`
+    };
+  };
 
   const handleExport = (type) => {
     if (currentUser?.role === 'Team Lead' || currentUser?.role === 'Viewers' || currentUser?.role === 'Project Manager') {
@@ -96,6 +139,8 @@ const InvoiceList = () => {
     if (type === 'CSV') exportToCSV(invoices, 'Invoice_Report.csv');
     else exportToXML(invoices, 'Invoice_Report.xml', 'Invoices');
   };
+
+  const stats = calculateStats();
 
   return (
     <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -117,7 +162,7 @@ const InvoiceList = () => {
               EXPORT CSV
             </button>
           )}
-          {currentUser?.role === 'Super Admin' && (
+          {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Company Admin') && (
             <Link 
               to="/invoicing/generate"
               className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-black text-white transition-all shadow-xl shadow-blue-500/20 group w-full sm:w-auto"
@@ -131,10 +176,10 @@ const InvoiceList = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatCard title="Total Invoiced" value="₹18.2M" color="blue" icon={<Receipt className="w-5 h-5" />} />
-        <StatCard title="Paid Amount" value="₹14.5M" color="emerald" icon={<CheckCircle2 className="w-5 h-5" />} />
-        <StatCard title="Pending" value="₹2.8M" color="amber" icon={<Clock className="w-5 h-5" />} />
-        <StatCard title="Overdue" value="₹0.9M" color="rose" icon={<AlertCircle className="w-5 h-5" />} />
+        <StatCard title="Total Invoiced" value={stats.total} color="blue" icon={<Receipt className="w-5 h-5" />} />
+        <StatCard title="Paid Amount" value={stats.paid} color="emerald" icon={<CheckCircle2 className="w-5 h-5" />} />
+        <StatCard title="Pending" value={stats.pending} color="amber" icon={<Clock className="w-5 h-5" />} />
+        <StatCard title="Overdue" value={stats.overdue} color="rose" icon={<AlertCircle className="w-5 h-5" />} />
       </div>
 
       {/* Filters & Table */}
@@ -178,40 +223,52 @@ const InvoiceList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
-              {filteredInvoices.map((invoice) => (
-                <tr key={invoice.id} className="group hover:bg-slate-800/20 transition-colors">
-                  <td className="px-6 py-5">
-                    <span className="text-sm font-black text-blue-500">#{invoice.id}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <p className="text-sm font-black text-white">{invoice.client}</p>
-                    <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-tighter">{invoice.project}</p>
-                  </td>
-                  <td className="px-6 py-5 text-sm font-black text-white">{invoice.amount}</td>
-                  <td className="px-6 py-5 text-sm font-bold text-slate-400">{invoice.dueDate}</td>
-                  <td className="px-6 py-5">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      invoice.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                      invoice.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                      'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                    }`}>
-                      {invoice.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {currentUser?.role === 'Super Admin' && (
-                        <button 
-                          onClick={() => deleteInvoice(invoice.id)}
-                          className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center text-slate-500 font-bold">Loading invoices...</td>
                 </tr>
-              ))}
+              ) : filteredInvoices.length > 0 ? (
+                filteredInvoices.map((invoice) => (
+                  <tr key={invoice._id} className="group hover:bg-slate-800/20 transition-colors">
+                    <td className="px-6 py-5">
+                      <span className="text-sm font-black text-blue-500">#{invoice.invoiceId}</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="text-sm font-black text-white">{invoice.clientName}</p>
+                      <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-tighter">{invoice.project}</p>
+                    </td>
+                    <td className="px-6 py-5 text-sm font-black text-white">{calculateTotal(invoice)}</td>
+                    <td className="px-6 py-5 text-sm font-bold text-slate-400">
+                      {new Date(invoice.dueDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        invoice.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                        invoice.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                        'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}>
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {currentUser?.role === 'Super Admin' && (
+                          <button 
+                            onClick={() => deleteInvoice(invoice._id)}
+                            className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center text-slate-500 font-bold">No invoices found.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

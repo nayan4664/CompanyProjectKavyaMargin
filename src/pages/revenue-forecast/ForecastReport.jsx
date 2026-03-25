@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Download,
@@ -8,53 +8,34 @@ import {
 } from "lucide-react";
 
 import { exportToCSV } from "../../utils/exportUtils";
-
-const reportData = [
-  {
-    id: 1,
-    name: "Q1 Performance Review",
-    type: "Financial",
-    author: "System AI",
-    date: "2026-04-01",
-    size: "1.2 MB",
-  },
-  {
-    id: 2,
-    name: "H2 Revenue Projections",
-    type: "Forecast",
-    author: "Admin User",
-    date: "2026-03-15",
-    size: "2.4 MB",
-  },
-  {
-    id: 3,
-    name: "Bench Cost Analysis - Mar",
-    type: "Efficiency",
-    author: "System AI",
-    date: "2026-03-10",
-    size: "0.8 MB",
-  },
-  {
-    id: 4,
-    name: "Annual Strategy Document",
-    type: "Strategy",
-    author: "Project Director",
-    date: "2026-01-05",
-    size: "4.5 MB",
-  },
-];
+import { forecastAPI } from "../../services/api";
 
 const ForecastReport = () => {
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [financialYear, setFinancialYear] = useState("All");
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     setCurrentUser(user);
+    fetchReports();
   }, []);
+
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      const response = await forecastAPI.getReports();
+      setReportData(response.data);
+    } catch (err) {
+      console.error("Error fetching forecast reports:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Function to get Financial Year from date
   const getFinancialYear = (date) => {

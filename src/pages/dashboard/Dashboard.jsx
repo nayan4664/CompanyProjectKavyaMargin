@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   TrendingUp, 
@@ -13,7 +13,9 @@ import {
   ArrowDownRight,
   RefreshCcw,
   Building2,
-  ArrowRight
+  ArrowRight,
+  BarChart3,
+  PieChart
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
@@ -26,24 +28,8 @@ import {
   Area
 } from 'recharts';
 import { useTheme } from '../../context/ThemeContext';
-
-const performanceData = [
-  { month: 'Jan', revenue: 45, margin: 32, cost: 28 },
-  { month: 'Feb', revenue: 52, margin: 34, cost: 30 },
-  { month: 'Mar', revenue: 48, margin: 31, cost: 32 },
-  { month: 'Apr', revenue: 61, margin: 35, cost: 38 },
-  { month: 'May', revenue: 55, margin: 38, cost: 35 },
-  { month: 'Jun', revenue: 67, margin: 36, cost: 42 },
-];
-
-const moduleInsights = [
-  { label: 'Organization', icon: ShieldCheck, status: 'Active', value: '12 Depts', color: 'text-blue-400' },
-  { label: 'Employee Cost', icon: Users, status: 'On Track', value: '₹12.4M', color: 'text-indigo-400' },
-  { label: 'Bench Management', icon: Briefcase, status: 'Optimization', value: '18 Resources', color: 'text-amber-400' },
-  { label: 'Contract Analyzer', icon: FileText, status: '8 New', value: '94% Compliance', color: 'text-emerald-400' },
-  { label: 'AI Prediction', icon: BrainCircuit, status: '92% Acc', value: '+4.2% Growth', color: 'text-purple-400' },
-  { label: 'Automated Invoicing', icon: Receipt, status: 'Pending', value: '₹8.2M Due', color: 'text-rose-400' },
-];
+import { dashboardAPI } from '../../services/api';
+import { useDashboard } from '../../context/DashboardContext';
 
 const StatCard = ({ title, value, change, icon: Icon, trend, color, isDarkMode }) => (
   <div className={`p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-300 group ${
@@ -74,43 +60,107 @@ const StatCard = ({ title, value, change, icon: Icon, trend, color, isDarkMode }
   </div>
 );
 
+const ModuleCard = ({ label, status, value, icon: Icon, color, link, isDarkMode }) => (
+  <Link to={link} className="block group">
+    <div className={`backdrop-blur-xl border p-6 rounded-[1.5rem] md:rounded-[2rem] hover:border-blue-500/50 transition-all duration-500 shadow-2xl h-full flex flex-col ${
+      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-gray-100'
+    }`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 ${
+          isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'
+        } ${color}`}>
+          <Icon className="w-5 h-5 md:w-6 md:h-6" />
+        </div>
+        <div className={`px-2 py-1 rounded-lg border text-[8px] font-black uppercase tracking-widest ${
+          isDarkMode ? 'bg-slate-800/50 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-100 text-slate-500'
+        }`}>
+          {status}
+        </div>
+      </div>
+      <h3 className={`text-sm md:text-base font-black mb-1 group-hover:text-blue-500 transition-colors ${
+        isDarkMode ? 'text-slate-100' : 'text-slate-900'
+      }`}>{label}</h3>
+      <div className={`text-lg md:text-xl font-black mb-4 ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>
+        {value}
+      </div>
+      <div className="mt-auto flex items-center gap-2 text-[8px] md:text-[10px] font-black text-blue-500 uppercase tracking-widest">
+        View Details
+        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </div>
+  </Link>
+);
+
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [kpiData, setKpiData] = React.useState({
-    margin: '₹32.4M',
-    cost: '₹14.8M',
-    utilization: '84.2%',
-    success: '96.8%'
-  });
+  const { lastUpdated } = useDashboard();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+
+  const fetchStats = async () => {
+    try {
+      setIsRefreshing(true);
+      const response = await dashboardAPI.getStats();
+      setStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, [lastUpdated]);
 
   const refreshData = () => {
-    setIsRefreshing(true);
-    
-    // Simulate data fetch/calculation delay
-    setTimeout(() => {
-      // Slightly randomize values to show "refresh" effect in a mock environment
-      const newMargin = (30 + Math.random() * 5).toFixed(1);
-      const newCost = (13 + Math.random() * 3).toFixed(1);
-      const newUtil = (80 + Math.random() * 10).toFixed(1);
-      const newSuccess = (94 + Math.random() * 4).toFixed(1);
+    fetchStats();
+  };
 
-      setKpiData({
-        margin: `₹${newMargin}M`,
-        cost: `₹${newCost}M`,
-        utilization: `${newUtil}%`,
-        success: `${newSuccess}%`
-      });
+  if (loading || !stats) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <RefreshCcw className="w-8 h-8 text-blue-500 animate-spin" />
+          <p className="text-slate-500 font-bold animate-pulse">Initializing Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
-      setIsRefreshing(false);
-    }, 800);
+  const { kpis, moduleInsights, performanceData } = stats;
+
+  const iconMap = {
+    'Organization': Building2,
+    'Employee Cost': Users,
+    'Bench Management': Briefcase,
+    'Contract Analyzer': FileText,
+    'AI Prediction': BrainCircuit,
+    'Invoicing': Receipt,
+    'Margin Tracker': BarChart3,
+    'Resource Allocation': PieChart,
+    'Revenue Forecast': TrendingUp
+  };
+
+  const linkMap = {
+    'Organization': '/organization/company-setup',
+    'Employee Cost': '/employee-cost/list',
+    'Bench Management': '/bench-management/list',
+    'Contract Analyzer': '/contract-analyzer/insights',
+    'AI Prediction': '/ai-prediction/forecast-insights',
+    'Invoicing': '/invoicing/list',
+    'Margin Tracker': '/margin-tracker/dashboard',
+    'Resource Allocation': '/resource-allocation/dashboard',
+    'Revenue Forecast': '/revenue-forecast/dashboard'
   };
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-10 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-100 tracking-tight flex flex-wrap items-center gap-4">
+          <h1 className={`text-3xl md:text-4xl font-black tracking-tight flex flex-wrap items-center gap-4 ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>
             Enterprise Dashboard
             <div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
               <span className="text-xs font-black uppercase tracking-widest text-blue-500 animate-pulse">Live</span>
@@ -132,7 +182,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard 
           title="Total Portfolio Margin" 
-          value={kpiData.margin} 
+          value={kpis.totalMargin} 
           change="8.4" 
           trend="up" 
           icon={TrendingUp}
@@ -141,7 +191,7 @@ const Dashboard = () => {
         />
         <StatCard 
           title="Operational Cost" 
-          value={kpiData.cost} 
+          value={kpis.operationalCost} 
           change="2.1" 
           trend="down" 
           icon={TrendingDown}
@@ -150,7 +200,7 @@ const Dashboard = () => {
         />
         <StatCard 
           title="Resource Utilization" 
-          value={kpiData.utilization} 
+          value={kpis.utilization} 
           change="5.6" 
           trend="up" 
           icon={Activity}
@@ -159,7 +209,7 @@ const Dashboard = () => {
         />
         <StatCard 
           title="Project Success Rate" 
-          value={kpiData.success} 
+          value={kpis.successRate} 
           change="0.4" 
           trend="up" 
           icon={ShieldCheck}
@@ -168,9 +218,9 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+      <div className="space-y-6 md:space-y-10">
         {/* Performance Chart */}
-        <div className={`lg:col-span-2 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border shadow-xl ${
+        <div className={`p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border shadow-xl ${
           isDarkMode ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-gray-100'
         }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-10">
@@ -246,49 +296,26 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Column: Module Insights */}
-        <div className="space-y-6 md:space-y-8">
-          <Link to="/organization/company-setup" className="block group">
-            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] hover:border-blue-500/50 transition-all duration-500 shadow-2xl">
-              <div className="flex items-center justify-between mb-6 md:mb-8">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform duration-500">
-                  <Building2 className="w-6 h-6 md:w-7 md:h-7" />
-                </div>
-                <div className="flex -space-x-3">
-                  {[1,2,3].map(i => (
-                    <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-xl border-2 md:border-4 border-slate-950 bg-slate-800 flex items-center justify-center text-[8px] md:text-[10px] font-black text-slate-400">
-                      HQ
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <h3 className="text-lg md:text-xl font-black text-slate-100 mb-2 group-hover:text-blue-500 transition-colors">Organization</h3>
-              <p className="text-xs md:text-sm text-slate-500 font-bold leading-relaxed mb-6">Global entity configuration and departmental hierarchy mapping.</p>
-              <div className="flex items-center gap-2 text-[10px] md:text-xs font-black text-blue-500 uppercase tracking-widest">
-                Configure Setup
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-              </div>
-            </div>
-          </Link>
-
-          <Link to="/employee-cost/list" className="block group">
-            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] hover:border-emerald-500/50 transition-all duration-500 shadow-2xl">
-              <div className="flex items-center justify-between mb-6 md:mb-8">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform duration-500">
-                  <Users className="w-6 h-6 md:w-7 md:h-7" />
-                </div>
-                <div className="px-3 py-1.5 md:px-4 md:py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                  <span className="text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-tighter">+12 New</span>
-                </div>
-              </div>
-              <h3 className="text-lg md:text-xl font-black text-slate-100 mb-2 group-hover:text-emerald-500 transition-colors">Employee Cost</h3>
-              <p className="text-xs md:text-sm text-slate-500 font-bold leading-relaxed mb-6">Granular cost breakdown and professional resource management.</p>
-              <div className="flex items-center gap-2 text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-widest">
-                Manage Resources
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-              </div>
-            </div>
-          </Link>
+        {/* Module Quick Links Section */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className={`text-xl md:text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Module Insights</h3>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Real-time status across all systems</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            {moduleInsights.map((module, index) => (
+              <ModuleCard 
+                key={index}
+                label={module.label}
+                status={module.status}
+                value={module.value}
+                icon={iconMap[module.label] || ShieldCheck}
+                color={module.color}
+                link={linkMap[module.label] || '#'}
+                isDarkMode={isDarkMode}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
